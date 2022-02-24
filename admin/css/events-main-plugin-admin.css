@@ -1,0 +1,348 @@
+/**
+ * All of the CSS for your admin-specific functionality should be
+ * included in this file.
+ */
+
+.wp-core-ui .button-primary.cancelled{background:#e04343; border-color:#e04343;box-shadow: none;font-weight: 700;font-size: 14px}
+#wp-admin-bar-new-attendees, .post-type-attendees .page-title-action,#menu-posts-attendees ul li:nth-child(3){display: none}
+/* Event detail Editor tab header */
+.event_editor_section .tab{overflow:hidden;background-color:#f1f1f1;border-bottom:1px solid #ccc}
+.event_editor_section .tab span{float:left;outline:none;cursor:pointer;padding:14px 16px;-webkit-transition:0.3s;-o-transition:0.3s;transition:0.3s;border:1px solid transparent}
+.event_editor_section .tab span:hover{background-color:#ddd}
+.event_editor_section .tab span.active{background-color:#fff;font-weight:bold;border-color:#cbcbcb;border-bottom-color:transparent;border-top-color:transparent}
+.event_editor_section .tab span.active:first-child{border-left-color:transparent}
+
+/* Event Attendee */
+.attendee-button-wrap{text-align:right;height:0}
+.attendee-button-wrap .button-wrap{display:inline-block;position:relative;top:-42px}
+.post-type-dffmain-events #edit-slug-box{width:70%;width:calc(100% - 300px);box-sizing:border-box}
+
+/* Event detail Editor tab content */
+.event_editor_section .tabcontent{display:none;padding:10px 15px 80px 20px;background:#fff;min-height:250px;position:relative}
+.event_editor_section .tabcontent .event_send_email{text-align:right;margin:1em 0}
+.event_editor_section .tabcontent .event_send_email input.button{padding:3px 30px;font-size:14px}
+.event_editor_section .tabcontent .heading_section h3 span{color:#47525d}
+.event_editor_section .tabcontent .heading-tag{font-size:17px}
+.event_editor_section .tabcontent>ol{margin-left:15px}
+.event_editor_section .tabcontent p b{font-weight:700}
+.event_editor_section #registration_form>select{margin:1em 0}
+.event_editor_section .tabcontent .save_next_section{position:absolute;right:15px;bottom:25px}
+.event_editor_section .tabcontent .save_next_section input.button-primary{padding:3px 20px;font-size:14px}
+.event_editor_section .registration-form-section{display:inline-block;width:100%;padding:2em 0;border-bottom:1px solid #ccc;margin-bottom:2em}
+.event_editor_section .registration-form-section .registration-form-select{display:inline-block;vertical-align:middle;width:80%}
+.event_editor_section .registration-form-section .registration-form-action{float:right;text-align:right}
+.event_editor_section .registration-form-section .registration-form-action input{margin-left:10px;padding:3px 20px;font-size:14px}
+.event_editor_section .registration-form-wrap .templete-not-selected{min-height:130px;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;font-size:20px}
+.event_cost_right_radio{margin-left: 10px;}
+.event_general_section {margin-top: 10px;}
+.event_titlediv input{position: relative;padding: 3px 8px;font-size: 1.7em;line-height: 100%;height: 1.7em;width: 100%;outline: 0;margin: 0 0 3px;background-color: #fff;}
+#titlediv #title-prompt-text {color: #43484d !important;}
+
+/* Email History DataTable */
+.event_editor_section .tabcontent .heading-tag-email .heading-tag{background-color:#eee;padding:10px;position:relative;cursor:pointer}
+.event_general_section #email_templates h3{font-size:18px;margin:2em 0 1em}
+.event_general_section #email_templates h3:first-child{margin:1em 0}
+.event_general_section #email_templates hr{border:0;background-color:#ccc;margin:20px auto;max-width:100%;height:1px}
+.event_editor_section .tabcontent .email_history .dataTables_scrollHeadInner{overflow:auto!important}
+.event_editor_section .tabcontent .email_history .dataTables_scrollHeadInner, .event_editor_section .tabcontent .email_history .dataTables_scrollHeadInner table{width:100%!important}
+.event_editor_section .tabcontent .email_history table{border-collapse:collapse!important;table-layout:fixed}
+.event_editor_section .tabcontent .email_history table tr th, .event_editor_section .tabcontent .email_history table tr td{border:1px solid #ccc;background-color:#fff;white-space:normal}
+.event_editor_section .tabcontent .email_history table tr th{background-color:#eee}
+.event_editor_section .tabcontent .email_history table tr.odd td.sorting_1{background-color:#fff}
+.event_editor_section .tabcontent .email_history table tr.even td{background-color:#f7f7f7}
+.event_editor_section .tabcontent .email_history table tr.even td.sorting_1{background-color:#f7f7f7}
+.event_editor_section .tabcontent .email_history table tr td:first-child, .event_editor_section .tabcontent .email_history table tr td:last-child{text-align:center}
+.event_editor_section .tabcontent .email_history table tr:hover td{background-color:#eee}
+.event_editor_section .tabcontent .email_history table tr:hover td.sorting_1{background-color:#eee}
+.event_editor_section .tabcontent .email_history table tr td .view_history_action{cursor:pointer;color:#2B7CBA;text-decoration:underline}
+
+/* Email History Popup */
+.email_history_popup{height:100%;width:100%;position:fixed;top:0;bottom:0;right:0;left:0;background:rgba(0, 0, 0, 0.4);z-index:999999;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;display:none}
+.email_history_popup.open-popup{display:-webkit-box;display:-ms-flexbox;display:flex}
+.email_history_popup .email_history_wrapper{position:relative;border:1px solid #d7d7d7;background-color:#fff;-webkit-box-shadow:0 0 9px rgba(0, 0, 0, 0.0784313725490196);box-shadow:0 0 9px rgba(0, 0, 0, 0.0784313725490196);width:96%;padding:50px 40px 30px 30px;-webkit-box-sizing:border-box;box-sizing:border-box;margin:0 auto;max-width:1080px;max-height:96vh;overflow:auto;text-align:left;min-height:50%}
+.email_history_popup .email_history_wrapper h3{margin:0 0 1em}
+.email_history_popup .email_history_wrapper p{word-break:break-word;white-space:normal}
+.email_history_popup .email_history_wrapper p:last-child{margin-bottom:0}
+.email_history_popup .email_history_wrapper .close_popup{position:absolute;right:10px;top:10px;font-size:29px;height:30px;width:30px;border-radius:100%;color:#444;cursor:pointer;z-index:999}
+.email_history_popup .email_history_wrapper .close_popup:hover{color:#000}
+.event_editor_section .email_history_popup .email_history_wrapper .accordian-main{margin-bottom:20px}
+.event_editor_section .email_history_popup .email_history_wrapper .accordian-title{margin-bottom:0}
+.event_editor_section .email_history_popup .email_history_wrapper .accordian-body{display:none}
+
+/* English Tab Editor */
+#tab_editor_id h2.hndle.ui-sortable-handle{display:none}
+#tab_editor_id h2.hndle{display:none!important}
+#tab_editor_id .inside{padding:0;border:none;margin:0}
+#tab_editor_id button.handlediv{display:none;visibility:hidden}
+
+/* Select Category & Tags penal */
+.dffmain_category_tags_section{margin:1em 0;display:-webkit-box;display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}
+.dffmain_category_tags_section .dffmain_category_block, .dffmain_category_tags_section .english_tags_block{width:23%;padding:10px;border:1px solid #ccd0d4;margin:10px 15px 10px 0;min-width:300px}
+.dffmain_category_tags_section .english_tags_block{margin:10px 0 10px}
+.dffmain_category_tags_section .dffmain_category_block .categorychecklist, .dffmain_category_tags_section .english_tags_block .tagschecklist{padding:10px;border:1px solid #ccd0d4;min-height:250px;max-height:250px;overflow:auto;-webkit-box-sizing:border-box;box-sizing:border-box}
+.dffmain_category_tags_section .taxonomy-add-new-cat, .dffmain_category_tags_section .taxonomy-add-new-tags{font-weight:600;text-decoration:none}
+.arabic_category_tags_section{margin:1em 0;display:-webkit-box;display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}
+.arabic_category_tags_section .arabic_category_block, .arabic_category_tags_section .arabic_tags_block{width:23%;padding:10px;border:1px solid #ccd0d4;margin:10px 15px 10px 0;min-width:300px}
+.arabic_category_tags_section .taxonomy-add-new-arabic-cat, .arabic_category_tags_section .taxonomy-add-new-arabic-tags{font-weight:600;text-decoration:none}
+.arabic_category_tags_section .arabic_category_block .categorychecklist, .arabic_category_tags_section .arabic_tags_block .tagschecklist{padding:10px;border:1px solid #ccd0d4;min-height:250px;max-height:250px;overflow:auto;-webkit-box-sizing:border-box;box-sizing:border-box}
+.event_editor_section ul.event_child_category{margin-left:15px!important}
+.event_editor_section ul.event_super_child_category{margin-left:30px}
+.dffmain_category_tags_section h4, .arabic_category_tags_section h4{margin:0 0 1.33em}
+.category-add input, .category-add select{margin:0 0 1em}
+
+/* Event detail sidebar */
+.event_reminder_select_box{width:100%}
+.event_date_select{width:100%}
+.event_time_start_select, .event_time_end_select{width:48%}
+.event_google_map_input{width:100%}
+
+/* Events Settings */
+.event_general_section .tab{overflow:hidden;border:1px solid #ccc;background-color:#f1f1f1}
+.event_general_section .tab span{float:left;outline:none;cursor:pointer;padding:14px 16px;-webkit-transition:0.3s;-o-transition:0.3s;transition:0.3s;border:1px solid transparent}
+.event_general_section .tab span:hover{background-color:#ddd}
+.event_general_section .tab span.active{background-color:#fff;font-weight:bold;border-color:#cbcbcb;border-bottom-color:transparent;border-top-color:transparent}
+.event_general_section .tab span.active:first-child{border-left-color:transparent}
+.event_general_section .tabcontent{display:none;padding:20px;background:#fff;border:1px solid #ccc;border-top-color:transparent;min-height:250px}
+.event_general_section .tabcontent .save_email_template{text-align:right;margin:1em 0}
+.event_general_section .tabcontent .save_email_template input.button{padding:4px 20px;font-size:14px}
+.event_general_section .add_site_table_group{margin-top:35px}
+.event_general_section .add_site_table{font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;border-collapse:collapse;width:50%}
+.event_general_section .add_site_table th{padding-top:12px;padding-bottom:12px;background-color:#ddd;color:#090707;text-align:center}
+.event_general_section .add_site_table td, .event_general_section .add_site_table th{padding:8px;border:1px solid #ccc}
+.event_general_section .add_site_table td.action{text-align:center}
+.event_general_section .add_site_table tr:nth-child(even) td{background-color:#f2f2f2}
+.event_general_section .add_site_table tr:hover td{background-color:#eee}
+.event_general_section .add_site_table .delete_site_button{cursor:pointer;font-size:22px}
+.event_general_section .add_site_table .delete_site_button:hover{color:#000}
+.event_general_section .add_sites_group input.add_sites_field{width:30%}
+
+/* cancle event */
+.event-modal-main{height:100%;width:100%;position:fixed;top:0;bottom:0;right:0;left:0;background:rgba(0, 0, 0, 0.4);z-index:9999;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;display:none}
+.event-modal-main.open-popup{display:-webkit-box;display:-ms-flexbox;display:flex}
+.event-modal-main .event-modal-content{background-color:#fefefe;margin:auto;border:1px solid #888;width:430px;position:relative;}
+.event-modal-main span.event-modal-close{color:#aaaaaa;font-size:28px;font-weight:bold;line-height:20px;position:absolute;right:15px;top:15px}
+.event-modal-main span.event-modal-close:hover, .event-modal-main span.event-modal-close:focus{color:#000;text-decoration:none;cursor:pointer}
+.event-modal-main .event-modal-content .modal-title{border-bottom:1px solid #ccc;padding:15px}
+.event-modal-main .event-modal-content h3{margin:0;font-size:18px}
+.event-modal-main .event-modal-content .modal-body{padding:15px}
+.event-modal-main .event-modal-content .modal-body p{font-size:16px;margin:0 0 1em}
+.event-modal-main .event-modal-content .modal-body .event-modal-close{background-color:#e6e4e4;border-color:#e6e4e4;color:#000;padding:0 15px}
+.event-modal-main .event-modal-content .modal-body .event-modal-close:hover{background-color:#ddd}
+.event-modal-main .event-modal-content .modal-body .button-wrap{margin-top:40px;text-align:right}
+.event-modal-main .event-modal-content .btn-danger{color:#fff;padding:2px 10px;border:1px solid #ddd;font-weight:600;letter-spacing:1px;cursor:pointer;background:#e83240;margin-left:8px}
+.event-modal-main .event-modal-content .btn-danger:hover{background-color:#da323f}
+.cancel_event_button_section #event_security_code_id{display:inline-block;vertical-align:middle;}
+
+/* Main Email Template */
+.main_email_template{display:inline-block;width:100%}
+.main_email_template .col-1{width:50%;float:left;padding-right:15px;box-sizing:border-box}
+.main_email_template .col-2{width:50%;float:right;padding-left:15px;box-sizing:border-box}
+.main_email_template .col-1 h4, .main_email_template .col-2 h4{margin:0 0 1em;font-size:16px}
+.main_email_template .subject_field_wrap input[type="text"], .main_email_template .ar_subject_field_wrap input[type="text"]{width:100%;margin-bottom:15px}
+.main_email_template .ar_subject_field_wrap input[type="text"]{direction:rtl}
+
+/* arabic category and tags texonomy */
+.taxonomy-events_arabic_categories #tag-name{direction:rtl}
+.taxonomy-events_arabic_categories #tag-slug{direction:rtl}
+.taxonomy-events_arabic_categories #tag-description{direction:rtl}
+.taxonomy-events_arabic_categories #parent{direction:rtl}
+.taxonomy-events_arabic_tags #tag-name{direction:rtl}
+.taxonomy-events_arabic_tags #tag-slug{direction:rtl}
+.taxonomy-events_arabic_tags #tag-description{direction:rtl}
+.taxonomy-events_arabic_tags #parent{direction:rtl}
+
+/*  Table of Predefine attributes for general setting*/
+.predefine_attributes table tbody tr td {border: 1px solid #ccbebe;padding: 6px;}
+
+/* page sections */
+.page_section{overflow:hidden}
+.page_section h3{margin:0 0 1em}
+.page_section .button-primary{padding:2px 15px;font-size:14px}
+#config .page_section{margin-bottom:30px;-webkit-box-shadow:0 0 5px #ccc;box-shadow:0 0 5px #ccc;padding:20px}
+.two_col_layout{display:-webkit-box;display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}
+.two_col_layout .section_col{min-width:350px;margin:10px 15px 30px 10px;-webkit-box-shadow:0 0 5px #ccc;box-shadow:0 0 5px #ccc;padding:20px}
+.google_recaptcha_credentials label{display:block;margin-bottom:15px}
+.google_recaptcha_credentials label:last-child{margin-bottom:0}
+.page_section label input{margin-left:10px;width:350px}
+.send_grid_credentials label{display:block;margin-bottom:15px}
+.send_grid_credentials label:last-child{margin-bottom:0}
+#config .page_section label{cursor:auto}
+#config .page_section label span{min-width:170px;display:inline-block}
+@media screen and (max-width:782px){.attendee-list-title{width:100%}}
+
+/**
+ * All of the CSS for your admin-specific functionality should be
+ * included in this file.
+ */
+
+ .wp-core-ui .button-primary.cancelled{background:#e04343; border-color:#e04343;box-shadow: none;font-weight: 700;font-size: 14px}
+ #wp-admin-bar-new-attendees, .post-type-attendees .page-title-action,#menu-posts-attendees ul li:nth-child(3){display: none}
+ /* Event detail Editor tab header */
+ .event_editor_section .tab{overflow:hidden;background-color:#f1f1f1;border-bottom:1px solid #ccc}
+ .event_editor_section .tab span{float:left;outline:none;cursor:pointer;padding:14px 16px;-webkit-transition:0.3s;-o-transition:0.3s;transition:0.3s;border:1px solid transparent}
+ .event_editor_section .tab span:hover{background-color:#ddd}
+ .event_editor_section .tab span.active{background-color:#fff;font-weight:bold;border-color:#cbcbcb;border-bottom-color:transparent;border-top-color:transparent}
+ .event_editor_section .tab span.active:first-child{border-left-color:transparent}
+ 
+ /* Event Attendee */
+ .attendee-button-wrap{text-align:right;height:0}
+ .attendee-button-wrap .button-wrap{display:inline-block;position:relative;top:-42px}
+ .post-type-dffmain-events #edit-slug-box{width:70%;width:calc(100% - 300px);box-sizing:border-box}
+ 
+ /* Event detail Editor tab content */
+ .event_editor_section .tabcontent{display:none;padding:10px 15px 80px 20px;background:#fff;min-height:250px;position:relative}
+ .event_editor_section .tabcontent .event_send_email{text-align:right;margin:1em 0}
+ .event_editor_section .tabcontent .event_send_email input.button{padding:3px 30px;font-size:14px}
+ .event_editor_section .tabcontent .heading_section h3 span{color:#47525d}
+ .event_editor_section .tabcontent .heading-tag{font-size:17px}
+ .event_editor_section .tabcontent>ol{margin-left:15px}
+ .event_editor_section .tabcontent p b{font-weight:700}
+ .event_editor_section #registration_form>select{margin:1em 0}
+ .event_editor_section .tabcontent .save_next_section{position:absolute;right:15px;bottom:25px}
+ .event_editor_section .tabcontent .save_next_section input.button-primary{padding:3px 20px;font-size:14px}
+ .event_editor_section .registration-form-section{display:inline-block;width:100%;padding:2em 0;border-bottom:1px solid #ccc;margin-bottom:2em}
+ .event_editor_section .registration-form-section .registration-form-select{display:inline-block;vertical-align:middle;width:80%}
+ .event_editor_section .registration-form-section .registration-form-action{float:right;text-align:right}
+ .event_editor_section .registration-form-section .registration-form-action input{margin-left:10px;padding:3px 20px;font-size:14px}
+ .event_editor_section .registration-form-wrap .templete-not-selected{min-height:130px;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;font-size:20px}
+ .event_cost_right_radio{margin-left: 10px;}
+ .event_general_section {margin-top: 10px;}
+ .event_titlediv input{position: relative;padding: 3px 8px;font-size: 1.7em;line-height: 100%;height: 1.7em;width: 100%;outline: 0;margin: 0 0 3px;background-color: #fff;}
+ #titlediv #title-prompt-text {color: #43484d !important;}
+ 
+ /* Email History DataTable */
+ .event_editor_section .tabcontent .heading-tag-email .heading-tag{background-color:#eee;padding:10px;position:relative;cursor:pointer}
+ .event_general_section #email_templates h3{font-size:18px;margin:2em 0 1em}
+ .event_general_section #email_templates h3:first-child{margin:1em 0}
+ .event_general_section #email_templates hr{border:0;background-color:#ccc;margin:20px auto;max-width:100%;height:1px}
+ .event_editor_section .tabcontent .email_history .dataTables_scrollHeadInner{overflow:auto!important}
+ .event_editor_section .tabcontent .email_history .dataTables_scrollHeadInner, .event_editor_section .tabcontent .email_history .dataTables_scrollHeadInner table{width:100%!important}
+ .event_editor_section .tabcontent .email_history table{border-collapse:collapse!important;table-layout:fixed}
+ .event_editor_section .tabcontent .email_history table tr th, .event_editor_section .tabcontent .email_history table tr td{border:1px solid #ccc;background-color:#fff;white-space:normal}
+ .event_editor_section .tabcontent .email_history table tr th{background-color:#eee}
+ .event_editor_section .tabcontent .email_history table tr.odd td.sorting_1{background-color:#fff}
+ .event_editor_section .tabcontent .email_history table tr.even td{background-color:#f7f7f7}
+ .event_editor_section .tabcontent .email_history table tr.even td.sorting_1{background-color:#f7f7f7}
+ .event_editor_section .tabcontent .email_history table tr td:first-child, .event_editor_section .tabcontent .email_history table tr td:last-child{text-align:center}
+ .event_editor_section .tabcontent .email_history table tr:hover td{background-color:#eee}
+ .event_editor_section .tabcontent .email_history table tr:hover td.sorting_1{background-color:#eee}
+ .event_editor_section .tabcontent .email_history table tr td .view_history_action{cursor:pointer;color:#2B7CBA;text-decoration:underline}
+ 
+ /* Email History Popup */
+ .email_history_popup{height:100%;width:100%;position:fixed;top:0;bottom:0;right:0;left:0;background:rgba(0, 0, 0, 0.4);z-index:999999;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;display:none}
+ .email_history_popup.open-popup{display:-webkit-box;display:-ms-flexbox;display:flex}
+ .email_history_popup .email_history_wrapper{position:relative;border:1px solid #d7d7d7;background-color:#fff;-webkit-box-shadow:0 0 9px rgba(0, 0, 0, 0.0784313725490196);box-shadow:0 0 9px rgba(0, 0, 0, 0.0784313725490196);width:96%;padding:50px 40px 30px 30px;-webkit-box-sizing:border-box;box-sizing:border-box;margin:0 auto;max-width:1080px;max-height:96vh;overflow:auto;text-align:left;min-height:50%}
+ .email_history_popup .email_history_wrapper h3{margin:0 0 1em}
+ .email_history_popup .email_history_wrapper p{word-break:break-word;white-space:normal}
+ .email_history_popup .email_history_wrapper p:last-child{margin-bottom:0}
+ .email_history_popup .email_history_wrapper .close_popup{position:absolute;right:10px;top:10px;font-size:29px;height:30px;width:30px;border-radius:100%;color:#444;cursor:pointer;z-index:999}
+ .email_history_popup .email_history_wrapper .close_popup:hover{color:#000}
+ .event_editor_section .email_history_popup .email_history_wrapper .accordian-main{margin-bottom:20px}
+ .event_editor_section .email_history_popup .email_history_wrapper .accordian-title{margin-bottom:0}
+ .event_editor_section .email_history_popup .email_history_wrapper .accordian-body{display:none}
+ 
+ /* English Tab Editor */
+ #tab_editor_id h2.hndle.ui-sortable-handle{display:none}
+ #tab_editor_id h2.hndle{display:none!important}
+ #tab_editor_id .inside{padding:0;border:none;margin:0}
+ #tab_editor_id button.handlediv{display:none;visibility:hidden}
+ 
+ /* Select Category & Tags penal */
+ .dffmain_category_tags_section{margin:1em 0;display:-webkit-box;display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}
+ .dffmain_category_tags_section .dffmain_category_block, .dffmain_category_tags_section .english_tags_block{width:23%;padding:10px;border:1px solid #ccd0d4;margin:10px 15px 10px 0;min-width:300px}
+ .dffmain_category_tags_section .english_tags_block{margin:10px 0 10px}
+ .dffmain_category_tags_section .dffmain_category_block .categorychecklist, .dffmain_category_tags_section .english_tags_block .tagschecklist{padding:10px;border:1px solid #ccd0d4;min-height:250px;max-height:250px;overflow:auto;-webkit-box-sizing:border-box;box-sizing:border-box}
+ .dffmain_category_tags_section .taxonomy-add-new-cat, .dffmain_category_tags_section .taxonomy-add-new-tags{font-weight:600;text-decoration:none}
+ .arabic_category_tags_section{margin:1em 0;display:-webkit-box;display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}
+ .arabic_category_tags_section .arabic_category_block, .arabic_category_tags_section .arabic_tags_block{width:23%;padding:10px;border:1px solid #ccd0d4;margin:10px 15px 10px 0;min-width:300px}
+ .arabic_category_tags_section .taxonomy-add-new-arabic-cat, .arabic_category_tags_section .taxonomy-add-new-arabic-tags{font-weight:600;text-decoration:none}
+ .arabic_category_tags_section .arabic_category_block .categorychecklist, .arabic_category_tags_section .arabic_tags_block .tagschecklist{padding:10px;border:1px solid #ccd0d4;min-height:250px;max-height:250px;overflow:auto;-webkit-box-sizing:border-box;box-sizing:border-box}
+ .event_editor_section ul.event_child_category{margin-left:15px!important}
+ .event_editor_section ul.event_super_child_category{margin-left:30px}
+ .dffmain_category_tags_section h4, .arabic_category_tags_section h4{margin:0 0 1.33em}
+ .category-add input, .category-add select{margin:0 0 1em}
+ 
+ /* Event detail sidebar */
+ .event_reminder_select_box{width:100%}
+ .event_date_select{width:100%}
+ .event_end_date_select{width:100%}
+ .event_time_start_select, .event_time_end_select{width:48%}
+ .event_google_map_input{width:100%}
+ 
+ /* Events Settings */
+ .event_general_section .tab{overflow:hidden;border:1px solid #ccc;background-color:#f1f1f1}
+ .event_general_section .tab span{float:left;outline:none;cursor:pointer;padding:14px 16px;-webkit-transition:0.3s;-o-transition:0.3s;transition:0.3s;border:1px solid transparent}
+ .event_general_section .tab span:hover{background-color:#ddd}
+ .event_general_section .tab span.active{background-color:#fff;font-weight:bold;border-color:#cbcbcb;border-bottom-color:transparent;border-top-color:transparent}
+ .event_general_section .tab span.active:first-child{border-left-color:transparent}
+ .event_general_section .tabcontent{display:none;padding:20px;background:#fff;border:1px solid #ccc;border-top-color:transparent;min-height:250px}
+ .event_general_section .tabcontent .save_email_template{text-align:right;margin:1em 0}
+ .event_general_section .tabcontent .save_email_template input.button{padding:4px 20px;font-size:14px}
+ .event_general_section .add_site_table_group{margin-top:35px}
+ .event_general_section .add_site_table{font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;border-collapse:collapse;width:50%}
+ .event_general_section .add_site_table th{padding-top:12px;padding-bottom:12px;background-color:#ddd;color:#090707;text-align:center}
+ .event_general_section .add_site_table td, .event_general_section .add_site_table th{padding:8px;border:1px solid #ccc}
+ .event_general_section .add_site_table td.action{text-align:center}
+ .event_general_section .add_site_table tr:nth-child(even) td{background-color:#f2f2f2}
+ .event_general_section .add_site_table tr:hover td{background-color:#eee}
+ .event_general_section .add_site_table .delete_site_button{cursor:pointer;font-size:22px}
+ .event_general_section .add_site_table .delete_site_button:hover{color:#000}
+ .event_general_section .add_sites_group input.add_sites_field{width:30%}
+ 
+ /* cancle event */
+ .event-modal-main{height:100%;width:100%;position:fixed;top:0;bottom:0;right:0;left:0;background:rgba(0, 0, 0, 0.4);z-index:9999;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;display:none}
+ .event-modal-main.open-popup{display:-webkit-box;display:-ms-flexbox;display:flex}
+ .event-modal-main .event-modal-content{background-color:#fefefe;margin:auto;border:1px solid #888;width:430px;position:relative;}
+ .event-modal-main span.event-modal-close{color:#aaaaaa;font-size:28px;font-weight:bold;line-height:20px;position:absolute;right:15px;top:15px}
+ .event-modal-main span.event-modal-close:hover, .event-modal-main span.event-modal-close:focus{color:#000;text-decoration:none;cursor:pointer}
+ .event-modal-main .event-modal-content .modal-title{border-bottom:1px solid #ccc;padding:15px}
+ .event-modal-main .event-modal-content h3{margin:0;font-size:18px}
+ .event-modal-main .event-modal-content .modal-body{padding:15px}
+ .event-modal-main .event-modal-content .modal-body p{font-size:16px;margin:0 0 1em}
+ .event-modal-main .event-modal-content .modal-body .event-modal-close{background-color:#e6e4e4;border-color:#e6e4e4;color:#000;padding:0 15px}
+ .event-modal-main .event-modal-content .modal-body .event-modal-close:hover{background-color:#ddd}
+ .event-modal-main .event-modal-content .modal-body .button-wrap{margin-top:40px;text-align:right}
+ .event-modal-main .event-modal-content .btn-danger{color:#fff;padding:2px 10px;border:1px solid #ddd;font-weight:600;letter-spacing:1px;cursor:pointer;background:#e83240;margin-left:8px}
+ .event-modal-main .event-modal-content .btn-danger:hover{background-color:#da323f}
+ .cancel_event_button_section #event_security_code_id{display:inline-block;vertical-align:middle;}
+ 
+ /* Main Email Template */
+ .main_email_template{display:inline-block;width:100%}
+ .main_email_template .col-1{width:50%;float:left;padding-right:15px;box-sizing:border-box}
+ .main_email_template .col-2{width:50%;float:right;padding-left:15px;box-sizing:border-box}
+ .main_email_template .col-1 h4, .main_email_template .col-2 h4{margin:0 0 1em;font-size:16px}
+ .main_email_template .subject_field_wrap input[type="text"], .main_email_template .ar_subject_field_wrap input[type="text"]{width:100%;margin-bottom:15px}
+ .main_email_template .ar_subject_field_wrap input[type="text"]{direction:rtl}
+ 
+ /* arabic category and tags texonomy */
+ .taxonomy-events_arabic_categories #tag-name{direction:rtl}
+ .taxonomy-events_arabic_categories #tag-slug{direction:rtl}
+ .taxonomy-events_arabic_categories #tag-description{direction:rtl}
+ .taxonomy-events_arabic_categories #parent{direction:rtl}
+ .taxonomy-events_arabic_tags #tag-name{direction:rtl}
+ .taxonomy-events_arabic_tags #tag-slug{direction:rtl}
+ .taxonomy-events_arabic_tags #tag-description{direction:rtl}
+ .taxonomy-events_arabic_tags #parent{direction:rtl}
+ 
+ /*  Table of Predefine attributes for general setting*/
+ .predefine_attributes table tbody tr td {border: 1px solid #ccbebe;padding: 6px;}
+ 
+ /* page sections */
+ .page_section{overflow:hidden}
+ .page_section h3{margin:0 0 1em}
+ .page_section .button-primary{padding:2px 15px;font-size:14px}
+ #config .page_section{margin-bottom:30px;-webkit-box-shadow:0 0 5px #ccc;box-shadow:0 0 5px #ccc;padding:20px}
+ .two_col_layout{display:-webkit-box;display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}
+ .two_col_layout .section_col{min-width:350px;margin:10px 15px 30px 10px;-webkit-box-shadow:0 0 5px #ccc;box-shadow:0 0 5px #ccc;padding:20px}
+ .google_recaptcha_credentials label{display:block;margin-bottom:15px}
+ .google_recaptcha_credentials label:last-child{margin-bottom:0}
+ .page_section label input{margin-left:10px;width:350px}
+ .send_grid_credentials label{display:block;margin-bottom:15px}
+ .send_grid_credentials label:last-child{margin-bottom:0}
+ #config .page_section label{cursor:auto}
+ #config .page_section label span{min-width:170px;display:inline-block}
+ @media screen and (max-width:782px){.attendee-list-title{width:100%}}
+ 
+#tab_editor_id .postbox-header {display: none;}
+.event_attendee_limit_count{width: 100%;}
+#event_attendee_limit_message .inside h4 {margin: 5px 0 10px 0;}
