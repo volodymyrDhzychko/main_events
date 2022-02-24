@@ -64,13 +64,11 @@ class Events_Main_Plugin_Admin {
 
 
 		/**custom page template for CPT dffmain-events */
-		// add_filter( 'single_template', array( $this, 'redirect_dffmain_events_template' ), 99, 1 );
+		add_filter( 'single_template', array( $this, 'redirect_dffmain_events_template' ), 99, 1 );
 		/**custom page template for Event (user registers on ) Thank you page */
 		add_filter( 'page_template', array( $this, 'redirect_dffmain_events_thank_you' ), 99, 1 );
 		/**create page on new site creation */
 		add_action( 'wp_initialize_site', array( $this, 'create_events_thank_you_page' ), 99, 1 );
-
-
 
 
 
@@ -81,7 +79,7 @@ class Events_Main_Plugin_Admin {
 
 		add_action( 'add_meta_boxes', array( $this, 'event_editor_meta_boxes' ) );
 
-
+		add_action('admin_menu',  array( $this, 'event_register_settings_page' ) );
 
 
 		add_action( 'save_post', array( $this, 'save_event_editor_meta_boxes' ) );
@@ -264,7 +262,8 @@ class Events_Main_Plugin_Admin {
 			'show_in_admin_bar'   => true,
 			'menu_position'       => 5,
 			'can_export'          => true,
-			'has_archive'         => true,
+			'exclude_from_search' => false,
+			'has_archive'         => false,
 			'exclude_from_search' => false,
 			'publicly_queryable'  => true,
 			'capability_type'     => 'page',
@@ -635,8 +634,8 @@ class Events_Main_Plugin_Admin {
 		die();
 	}
 
-		/**
-	 *  DFF custom post type meta box
+	/**
+	 *  DFF custom events meta box
 	 */
 	public function event_editor_meta_boxes() {
 
@@ -673,6 +672,29 @@ class Events_Main_Plugin_Admin {
 		if ( 'cancelled' !== $event_cancelled ) {
 			add_meta_box( 'event_cancel_id', __( 'Cancel Event', 'events-main-plugin' ), 'cancel_event_function', 'dffmain-events', 'side', 'low' );
 		}
+	}
+
+	/**
+	 *  DFF custom events settings page
+	 */
+	public function event_register_settings_page() {
+
+		add_submenu_page( 
+			'edit.php?post_type=dffmain-events', 
+			'event-settings', 
+			'Events settings', 
+			'manage_options', 
+			'diffmain-events-settings-page', 
+			array( $this, 'single_site_events_settings_page' )
+		);
+	}
+
+	/**
+	 *  DFF custom events settings page function
+	 */
+	public function single_site_events_settings_page() {
+
+		include plugin_dir_path( __FILE__ ) . 'partials/single_site_events_settings_page.php';
 	}
 
 	/**
@@ -826,24 +848,6 @@ class Events_Main_Plugin_Admin {
 			'dashicons-calendar', 
 			50 
 		);
-
-		// add_submenu_page(
-		// 	'settings.php',
-		// 	__( 'Multisite Events Settings Page', 'events-main-plugin' ),
-		// 	__( 'Events Settings', 'events-main-plugin' ),
-		// 	'manage_network_options',
-		// 	'network-dffmain-events-settings-page',
-		// 	array( $this, 'events_settings_page' )
-		// );
-
-		// add_submenu_page(
-		// 	'edit.php?post_type=dffmain-events',
-		// 	__( 'Settings', 'events-main-plugin' ),
-		// 	__( 'Settings', 'events-main-plugin' ),
-		// 	'manage_options',
-		// 	'events_settings',
-		// 	array( $this, 'events_settings_page' )
-		// );
 	}
 
 	/**
@@ -892,7 +896,7 @@ class Events_Main_Plugin_Admin {
 		 * setings to update globaly (over all translations)
 		 */
 
-		// Cost settings
+		// Cost settings TODO -- not saving -- maybe filter in theme
 		$event_cost_name = filter_input( INPUT_POST, 'event_cost_name', FILTER_SANITIZE_STRING );
 		$event_cost_name = isset( $event_cost_name ) ? esc_html( $event_cost_name ) : '';
 
@@ -939,7 +943,7 @@ class Events_Main_Plugin_Admin {
 		$event_special_instruction = filter_input( INPUT_POST, 'event_special_instruction', FILTER_SANITIZE_STRING );
 		$event_special_instruction = isset( $event_special_instruction ) ? $event_special_instruction : '';
 
-		// Google maps embeded code
+		// Google maps embeded code TODO -- not saving -- maybe filter in theme
 		$allow_tags = array(
 			'iframe' => array(
 				'src'             => array(),
@@ -965,15 +969,10 @@ class Events_Main_Plugin_Admin {
 
 		$current_site_id = get_current_blog_id();
 		$translations = multilingualpress_get_ids( $post_id, $current_site_id );
-		$in = 0;
-		$out = 0;
+
 		foreach ( $translations as $site_id => $post_id ) {
-			update_option('map_i2_'.$site_id, $post_id);
-$out++;
+
 			switch_to_blog( $site_id );
-			$in++;
-			// update_option('map123', $google_embed_maps_code);
-			update_option('map_i_'.$site_id, $post_id);
 
 				// Cost settings
 				update_post_meta( $post_id, 'event_cost_name', $event_cost_name );
@@ -1017,8 +1016,6 @@ $out++;
 
 			restore_current_blog();
 		}
-		update_option('map_in', $in);
-		update_option('map_out', $out);
 	}
 
 	/**

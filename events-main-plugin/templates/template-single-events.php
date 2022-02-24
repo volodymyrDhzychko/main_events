@@ -5,14 +5,17 @@
 global $post;
 get_header();
 the_post();
-echo '<pre>'; var_dump( get_queried_object() ); echo '</pre>';
-echo get_post_permalink( $post->ID, true );
-// echo get_the_ID();
-// echo '<br>';
-// $url = add_query_arg( array('page_id' => get_the_ID()), home_url('/') );
-// echo $url;
 
-// global $post;
+$current_is_rtl = false;
+$translations = dffmain_mlp_get_translations();
+foreach ($translations as $translation) {
+
+	$language = $translation->language();
+	$remote_site_id = $translation->remoteSiteId();
+	if ( get_current_blog_id() == $remote_site_id ) {
+		$current_is_rtl = $language->isRtl();
+	}
+}
 
 $server_https     = filter_input( INPUT_SERVER, 'HTTPS', FILTER_SANITIZE_STRING );
 $server_http_host = filter_input( INPUT_SERVER, 'HTTP_HOST', FILTER_SANITIZE_STRING );
@@ -22,9 +25,13 @@ $event_link = ( isset( $server_https ) && $server_https === 'on' ? 'https' : 'ht
 
 $event_id = filter_input( INPUT_GET, 'eid', FILTER_SANITIZE_NUMBER_INT );
 $event_id = isset( $event_id ) ? $event_id : $post->ID;
+/**TODO if we need eid? */
+$event_id = $post->ID;
 
 $language = filter_input( INPUT_GET, 'lang', FILTER_SANITIZE_STRING );
 $language = isset( $language ) ? $language : 'en';
+/** TODO check for language */
+$language = 'en';
 
 $checkin = filter_input( INPUT_GET, 'checkin', FILTER_SANITIZE_STRING );
 $checkin = isset( $checkin ) ? $checkin : 'false';
@@ -34,8 +41,8 @@ $settings_array_get          = get_option( 'events_general_settings' );
 $events_general_settings_get = json_decode( $settings_array_get );
 $events_general_settings_get = (array) $events_general_settings_get;
 
-$site_key   = isset( $events_general_settings_get['site_key'] ) && ! empty( $events_general_settings_get['site_key'] ) ? $events_general_settings_get['site_key'] : '6Le31fsUAAAAAPodqC2JIHJfLCl8HU-09FRxxweR';
-$secret_key = isset( $events_general_settings_get['secret_key'] ) && ! empty( $events_general_settings_get['secret_key'] ) ? $events_general_settings_get['secret_key'] : '6Le31fsUAAAAALgxy3kP1XyQX9Lg6678poRVuBvT';
+$site_key   = isset( $events_general_settings_get['site_key'] ) && ! empty( $events_general_settings_get['site_key'] ) ? $events_general_settings_get['site_key'] : 'hardcode_recapcha_site_key';
+$secret_key = isset( $events_general_settings_get['secret_key'] ) && ! empty( $events_general_settings_get['secret_key'] ) ? $events_general_settings_get['secret_key'] : 'hardcode_recapcha_secret_key';
 
 
 $event_attendee_limit_count = get_post_meta( $event_id, 'event_attendee_limit_count', true );
@@ -66,7 +73,7 @@ if ( isset( $language ) && ! empty( $language ) ) {
 	$emp_tags              = '';
 	$event_details_heading = '';
 	$meta                  = get_post_meta( $event_id );
-	// echo '<pre>'; print_r($meta); echo '</pre>'; wp_die();
+
 
 	$event_date               = isset( $meta['event_date_select'][0] ) ? $meta['event_date_select'][0] : '-';
 	$event_all_date           = isset( $meta['event_date_select'][0] ) ? $meta['event_date_select'][0] : '-';
@@ -87,79 +94,40 @@ if ( isset( $language ) && ! empty( $language ) ) {
 		$event_all_date = $event_end_date;
 	}
 
+	$wrap_class      = ' en-wrap';
+	$container_class = ' en-field';
 
-	if ( 'en' === $language ) {
-		$wrap_class              = ' en-wrap';
-		$container_class         = ' en-field';
-		$event_title             = isset( $meta['english_post_title'][0] ) ? $meta['english_post_title'][0] : '-';
-		$events_overview         = isset( $meta['events_english_overview'][0] ) ? $meta['events_english_overview'][0] : '-';
-		$events_agenda           = isset( $meta['events_english_agenda'][0] ) ? $meta['events_english_agenda'][0] : '-';
-		$event_location          = isset( $meta['english_event_location'][0] ) ? $meta['english_event_location'][0] : '-';
-		$emp_category            = isset( $meta['emp_english_category'][0] ) ? $meta['emp_english_category'][0] : '';
-		$emp_tags                = isset( $meta['emp_english_tags'][0] ) ? $meta['emp_english_tags'][0] : '-';
-		$event_description       = 'Overview';
-		$agenda                  = 'Agenda';
-		$registration_form       = 'Registration Form';
-		$registration_form_close = 'Registration is closed.';
-		$date                    = 'Date';
-		$time                    = 'Time';
-		$cost                    = 'Cost';
-		$location                = 'Location';
-		$category                = 'Category';
-		$register                = 'Register';
-		$remaining_attendee      = 'Remaining Seats';
-		$events                  = 'Events';
-		$event_details_heading   = 'Event Details';
+	$event_title             = isset( $meta['dffmain_post_title'][0] ) ? $meta['dffmain_post_title'][0] : '-';
+	$events_overview         = isset( $meta['events_overview'][0] ) ? $meta['events_overview'][0] : '-';
+	$events_agenda           = isset( $meta['dffmain_events_agenda'][0] ) ? $meta['dffmain_events_agenda'][0] : '-';
+	$event_location          = isset( $meta['dffmain_event_location'][0] ) ? $meta['dffmain_event_location'][0] : '-';
+	$emp_category            = isset( $meta['emp_category'][0] ) ? $meta['emp_category'][0] : '';
+	$emp_tags                = isset( $meta['emp_tags'][0] ) ? $meta['emp_tags'][0] : '-';
 
-		$event_date        = ( ! empty( $event_date ) ) ? date( 'F d, Y', strtotime( $event_date ) ) : '-';
-		$event_end_date    = ( ! empty( $event_end_date ) ) ? date( 'F d, Y', strtotime( $event_end_date ) ) : '';
-		
+	$locale_settings_array_get          = get_option( 'locale_events_general_settings' );
+	$locale_events_general_settings_get = json_decode( $locale_settings_array_get );
+	$locale_events_general_settings_get = (array) $locale_events_general_settings_get;
 
-		$future_id         = 'Do you want to create Future ID?';
-		$future_id_tooltip = '(FUTURE ID is your gateway into Dubai’s innovation ecosystem. Manage your personal and organization profiles, and gain access to numerous opportunities across Dubai, with a single account.)';
+	$event_description       = $locale_events_general_settings_get['local_overview'];
+	$agenda                  = $locale_events_general_settings_get['local_agenda'];
+	$registration_form       = $locale_events_general_settings_get['local_registration_form'];
+	$registration_form_close = $locale_events_general_settings_get['local_registration_is_closed'];
+	$date                    = $locale_events_general_settings_get['local_date'];
+	$time                    = $locale_events_general_settings_get['local_time'];
+	$cost                    = $locale_events_general_settings_get['local_cost'];
+	$location                = $locale_events_general_settings_get['local_location'];
+	$category                = $locale_events_general_settings_get['local_category'];
+	$register                = $locale_events_general_settings_get['local_register'];
+	$remaining_attendee      = $locale_events_general_settings_get['local_remaining_seats'];
+	$events                  = $locale_events_general_settings_get['local_events'];
+	$event_details_heading   = $locale_events_general_settings_get['local_event_details'];
 
+	$event_date        = ( ! empty( $event_date ) ) ? date( 'F d, Y', strtotime( $event_date ) ) : '-';
+	$event_end_date    = ( ! empty( $event_end_date ) ) ? date( 'F d, Y', strtotime( $event_end_date ) ) : '';
 
-	} elseif ( 'ar' === $language ) {
-		$wrap_class              = ' ar-wrap';
-		$container_class         = ' ar-field';
-		$event_title             = isset( $meta['arabic_post_title'][0] ) ? $meta['arabic_post_title'][0] : '-';
-		$events_overview         = isset( $meta['events_arabic_overview'][0] ) ? $meta['events_arabic_overview'][0] : '-';
-		
-		if( '' === $event_title || '' === $events_overview ) {
-			
-			$event_link_en = str_replace( 'lang=ar', 'lang=en', $event_link );
-			wp_safe_redirect( $event_link_en );
-			exit;
-		}
-		
-		$events_agenda           = isset( $meta['events_arabic_agenda'][0] ) ? $meta['events_arabic_agenda'][0] : '-';
-		$event_location          = isset( $meta['arabic_event_location'][0] ) ? $meta['arabic_event_location'][0] : '-';
-		$emp_category            = isset( $meta['emp_arabic_category'][0] ) ? $meta['emp_arabic_category'][0] : '';
-		$emp_tags                = isset( $meta['emp_arabic_tags'][0] ) ? $meta['emp_arabic_tags'][0] : '-';
-		$event_description       = 'نظرة عامة';
-		$agenda                  = 'الأجندة';
-		$registration_form       = 'نموذج التسجيل';
-		$date                    = 'تاريخ';
-		$time                    = 'موعد';
-		$cost                    = 'سعر';
-		$location                = 'موقع';
-		$category                = 'الفئة';
-		$events                  = 'الأحداث';
-		$event_details_heading   = 'تفاصيل الحدث';
-		$remaining_attendee      = 'المقاعد المتبقية';
-		$registration_form_close = 'التسجيل مغلق';
-		$register                = 'التسجيل';
-		$future_id               = 'هل تريد إنشاء معرف المستقبل؟';
-		$future_id_tooltip       = '(معرّف المستقبل هو بوابتك إلى النظام البيئي للابتكار في دبي. يمكنك إدارة ملفاتك الشخصية والملكية ، والوصول إلى العديد من الفرص في جميع أنحاء دبي ، من خلال حساب واحد.)';
-		if ( 'Free' === $event_cost ) {
-			$event_cost = 'مجانا';
-		} elseif ( 'Paid' === $event_cost ) {
-			$event_cost = 'دفع';
-		} else {
-			$event_cost = '';
-		}
-
-		$today_date = date( 'd F Y');
+	if ( $current_is_rtl ) {
+		$wrap_class      = ' ar-wrap';
+		$container_class = ' ar-field';
 
 		$months = [
 			'January'   => 'كانون الثاني',
@@ -182,19 +150,7 @@ if ( isset( $language ) && ! empty( $language ) ) {
 			$month = $months[ $month ];
 
 			$event_date = $month . ' ' . $day . ' ,' . $year;
-
 		}
-
-		if ( ! empty( $today_date ) ) {
-			$day   = date( 'd', strtotime( $today_date ) );
-			$month = date( 'F', strtotime( $today_date ) );
-			$year  = date( 'Y', strtotime( $today_date ) );
-			$month = $months[ $month ];
-
-			$today_date = $month . ' ' . $day . ' ,' . $year;
-
-		}
-
 		if ( ! empty( $event_end_date ) ) {
 			$day   = date( 'd', strtotime( $event_end_date ) );
 			$month = date( 'F', strtotime( $event_end_date ) );
@@ -203,7 +159,6 @@ if ( isset( $language ) && ! empty( $language ) ) {
 
 			$event_end_date = $month . ' ' . $day . ', ' . $year;
 		}
-
 	}
 
 	$emp_categoryArr = isset( $emp_category ) && ! empty( $emp_category ) ? explode( ',', $emp_category ) : [];
@@ -225,11 +180,12 @@ if ( isset( $language ) && ! empty( $language ) ) {
 	$field_html = '';
 	if ( ! empty( $registration_form_data ) && isset( $registration_form_data ) ) {
 		foreach ( $registration_form_data as $key => $item ) {
-			if ( 'en' === $language ) {
+			/** TODO language! */
+			if ( !$current_is_rtl ) {
 				$field_arr  = $item['en'];
 				$class_name = ' en-field';
 				$name       = $field_arr['id'];
-			} elseif ( 'ar' === $language ) {
+			} else {
 				$field_arr  = $item['ar'];
 				$class_name = ' ar-field';
 				$name       = substr_replace( $field_arr['id'], 'en', 0, 2 );
@@ -385,7 +341,7 @@ if ( isset( $language ) && ! empty( $language ) ) {
 	}
 
 	if ( ! empty( $event_security_code ) && '' !== $event_security_code && 'true' === $security_code_checkbox ) {
-		if ( 'ar' === $language ) {
+		if ( $current_is_rtl ) {
 			$field_html .= '<div class="field-wrap required">
                                 <div class="field-container ar-field">
                                     <span class="field-label">رمز الأمان / رمز الحدث<sup class="medatory"> *</sup></span>
@@ -404,7 +360,7 @@ if ( isset( $language ) && ! empty( $language ) ) {
 		}
 	}
 
-	if ( 'ar' === $language ) {
+	if ( $current_is_rtl ) {
 		$field_html .= '<div class="field-wrap subscribe">
                             <div class="field-container ar-field">                
                                 <label for="subscribe_now" class="screen-reader-text"></label>
@@ -479,15 +435,19 @@ if ( isset( $language ) && ! empty( $language ) ) {
 
 	<ul class="breadcrumbs">
 		<li class="breadcrumb">
-			<a aria-label="home" role="complementary" target="_blank" href="https://www.dubaifuture.ae/events/"><svg xmlns="http://www.w3.org/2000/svg" width="17.333" height="16" viewBox="0 0 17.333 16">
-			<path fill="currentColor" id="Icon_ionic-md-home" data-name="Icon ionic-md-home" d="M10.042,20.5V15.167h4V20.5h4.067v-8h2.6l-8.667-8-8.667,8h2.6v8Z" transform="translate(-3.375 -4.5)"></path>
-			</svg>
+			<a aria-label="home" role="complementary" target="_blank" href="<?php echo home_url(); ?>">
+				<svg xmlns="http://www.w3.org/2000/svg" width="17.333" height="16" viewBox="0 0 17.333 16">
+					<path fill="currentColor" id="Icon_ionic-md-home" data-name="Icon ionic-md-home" d="M10.042,20.5V15.167h4V20.5h4.067v-8h2.6l-8.667-8-8.667,8h2.6v8Z" transform="translate(-3.375 -4.5)"></path>
+				</svg>
 			</a>
-			</li>
-		<li class="breadcrumb">
-			<a aria-label="Events" target="_blank" href="https://www.dubaifuture.ae/events/"><?php echo esc_html( $events ); ?></a>
 		</li>
-		<li class="breadcrumb"><?php echo esc_html( $event_title ); ?></li>
+		<li class="breadcrumb">
+			<?php $page_for_events_archive_obj = get_page_by_path( 'events' ); ?>
+			<a aria-label="Events" target="_blank" href="<?php echo get_permalink( $page_for_events_archive_obj ); ?>">
+				<?php echo esc_html( get_the_title( $page_for_events_archive_obj ) ); ?>
+			</a>
+		</li>
+		<li class="breadcrumb"><?php echo esc_html( get_the_title() ); ?></li>
 	</ul>
 
 
@@ -496,10 +456,12 @@ if ( isset( $language ) && ! empty( $language ) ) {
 			<div class="admin-front-register-page <?php echo esc_attr( $wrap_class ); ?>">
 				<div class="container">
 					<div class="row">
-						<?php if ( 'ar' === $language ) { ?>
+
+						<?php if ( $current_is_rtl ) { ?>
+
 							<div class="col col-right">
-								<div class="event-placeholder-image">
-									<img src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/event-placeholder.png" alt="event-placeholder-image">
+								<div class="event-placeholder-image event-placeholder-ar-align">
+									<img src="<?php echo get_the_post_thumbnail_url( $event_id, 'thumbnail' ); ?>" alt="event-placeholder-image">
 								</div>
 								<div class="sidebar">
 									<div class="sidebar-title">
@@ -508,7 +470,9 @@ if ( isset( $language ) && ! empty( $language ) ) {
 									<div class="data-item-main date-panel">
 										<div class="data-item-content">
 											<h4><?php echo esc_html( $date ); ?></h4>
-											<p><?php echo esc_html( $event_date ); ?><?php if( isset( $event_end_date ) && !empty( $event_end_date ) ) { echo " - ". esc_html( $event_end_date ); } ?></p>
+											<p>
+												<?php echo esc_html( $event_date ); ?><?php if( isset( $event_end_date ) && !empty( $event_end_date ) ) { echo " - ". esc_html( $event_end_date ); } ?>
+											</p>
 										</div>
 									</div>
 									<?php 
@@ -549,12 +513,15 @@ if ( isset( $language ) && ! empty( $language ) ) {
 										?>
 										<div class="data-item-main location-panel">
 											<div class="data-item-content">
-												
-													<h4><?php echo esc_html( $location ); ?></h4>
-													
+												<h4>
+													<?php echo esc_html( $location ); ?>
+												</h4>													
 												<?php if ( ! empty( $event_google_map_link ) ) { ?>
-													<p><a aria-label="event_google_map_link" href="<?php echo esc_url( $event_google_map_link ); ?>"
-														target="_blank"><?php echo esc_html( $event_location ); ?></a></p>
+													<p>
+														<a aria-label="event_google_map_link" href="<?php echo esc_url( $event_google_map_link ); ?>"target="_blank">
+															<?php echo esc_html( $event_location ); ?>
+														</a>
+													</p>
 												<?php } else { ?>
 													<p><?php echo esc_html( $event_location ); ?></p>
 												<?php } ?>
@@ -567,7 +534,9 @@ if ( isset( $language ) && ! empty( $language ) ) {
 										?>
 											<div class="data-item-main categroy-panel">
 												<div class="data-item-content">
-													<h4><?php echo esc_html( $category ); ?></h4>
+													<h4>
+														<?php echo esc_html( $category ); ?>
+													</h4>
 													<?php 
 													$category_name_array = explode( ",", $category_name );
 													
@@ -575,7 +544,9 @@ if ( isset( $language ) && ! empty( $language ) ) {
 														$test[] = '<a href="https://www.dubaifuture.ae/events/?filter='.strtolower( str_replace(" ","-",$category_name_array_value) ).'"> '.$category_name_array_value.'</a>';
 													}
 													?>
-													<p><?php echo implode( ", ", $test ); ?> </p>
+													<p>
+														<?php echo implode( ", ", $test ); ?> 
+													</p>
 												</div>
 											</div>
 										<?php
@@ -608,8 +579,9 @@ if ( isset( $language ) && ! empty( $language ) ) {
 									<div class="event-title-wrp">
 										<div class="hero-scrollToIcon">
 											<a aria-label="event_registration_form" href="#event_registration_form" class="hero-scrollTo">
-												<svg role="complementary" xmlns="http://www.w3.org/2000/svg" width="10" height="26" viewBox="0 0 10 26">
-													<path id="Union_1" data-name="Union 1" d="M-6020,20h4V0h2V20h4l-5,6Z" transform="translate(6020)" fill="currentColor"></path>
+												<svg xmlns="http://www.w3.org/2000/svg" role="complementary" width="10" height="26" viewBox="0 0 10 26">
+													<path id="Union_1" data-name="Union 1" d="M-6020,20h4V0h2V20h4l-5,6Z" transform="translate(6020)" fill="white">
+													</path>
 												</svg>
 											</a>
 										</div>
@@ -617,10 +589,10 @@ if ( isset( $language ) && ! empty( $language ) ) {
 									</div>
 									<?php
 									$event_detail_img = get_post_meta( $event_id, 'event_detail_img', true );
-									if ( isset( $event_detail_img ) && ! empty( $event_detail_img ) ) {
-										$image_attributes = wp_get_attachment_image_src( $event_detail_img, 'full' );
-										$image_alt        = get_post_meta( $event_detail_img, '_wp_attachment_image_alt', true );
-										$image_title      = get_the_title( $event_detail_img );
+									$image_attributes = wp_get_attachment_image_src( $event_detail_img, 'full' );
+									$image_alt        = get_post_meta( $event_detail_img, '_wp_attachment_image_alt', true );
+									$image_title      = get_the_title( $event_detail_img );
+									if ( isset( $image_attributes ) && ! empty( $image_attributes ) ) {
 										?>
 										<img 
 											class="event_detail_image" 
@@ -640,10 +612,14 @@ if ( isset( $language ) && ! empty( $language ) ) {
 												<h4>SHARE</h4>
 												<ul class="social-icons">
 													<li>
-														<a aria-label="facebook" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo esc_attr( $event_link ); ?>"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+														<a aria-label="facebook" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo esc_attr( $event_link ); ?>">
+															<img src="<?php  echo plugin_dir_url( dirname( __FILE__ ) ) . 'public/images/facebook.png';; ?>" alt="facebook">
+														</a>
 													</li>
 													<li>
-														<a aria-label="twitter" target="_blank" href="https://twitter.com/intent/tweet?text=<?php echo esc_attr( $event_title ); ?> url=<?php echo esc_attr( $event_link ); ?>"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+														<a aria-label="twitter" target="_blank" href="https://twitter.com/intent/tweet?text=<?php echo esc_attr( $event_title ); ?> url=<?php echo esc_attr( $event_link ); ?>">
+															<img src="<?php  echo plugin_dir_url( dirname( __FILE__ ) ) . 'public/images/twitter.png';; ?>" alt="twitter">
+														</a>
 													</li>
 												</ul>
 											</div>
@@ -742,21 +718,21 @@ if ( isset( $language ) && ! empty( $language ) ) {
 							<div class="col col-left">
 								<div class="event-data-wrap">
 									<div class="event-title-wrp">
-										<h1><?php echo esc_html( $event_title ); ?></h1>
+										<h1><?php echo esc_html( get_the_title() ); ?></h1>
 										<div class="hero-scrollToIcon">
 											<a aria-label="event_registration_form" href="#event_registration_form" class="hero-scrollTo">
 												<svg xmlns="http://www.w3.org/2000/svg" role="complementary" width="10" height="26" viewBox="0 0 10 26">
-													<path id="Union_1" data-name="Union 1" d="M-6020,20h4V0h2V20h4l-5,6Z" transform="translate(6020)" fill="currentColor"></path>
+													<path id="Union_1" data-name="Union 1" d="M-6020,20h4V0h2V20h4l-5,6Z" transform="translate(6020)" fill="white"></path>
 												</svg>
 											</a>
 										</div>
 									</div>
 									<?php
 									$event_detail_img = get_post_meta( $event_id, 'event_detail_img', true );
+									$image_attributes = wp_get_attachment_image_src( $event_detail_img, 'full' );
 									$image_alt        = get_post_meta( $event_detail_img, '_wp_attachment_image_alt', true );
 									$image_title      = get_the_title( $event_detail_img );
-									if ( isset( $event_detail_img ) && ! empty( $event_detail_img ) ) {
-										$image_attributes = wp_get_attachment_image_src( $event_detail_img, 'full' );
+									if ( isset( $image_attributes ) && ! empty( $image_attributes ) ) {
 										?>
 										<img class="event_detail_image" src="<?php echo esc_url( $image_attributes[0] ); ?>"
 											 alt="
@@ -797,10 +773,14 @@ if ( isset( $language ) && ! empty( $language ) ) {
 												<h4>SHARE</h4>
 												<ul class="social-icons">
 													<li>
-														<a aria-label="facebook" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo esc_attr( $event_link ); ?>"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+														<a aria-label="facebook" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo esc_attr( $event_link ); ?>">
+															<img src="<?php  echo plugin_dir_url( dirname( __FILE__ ) ) . 'public/images/facebook.png';; ?>" alt="facebook">
+														</a>
 													</li>
 													<li>
-														<a aria-label="twitter" target="_blank" href="https://twitter.com/intent/tweet?text=<?php echo esc_attr( $event_title ); ?> url=<?php echo esc_attr( $event_link ); ?>"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+														<a aria-label="twitter" target="_blank" href="https://twitter.com/intent/tweet?text=<?php echo esc_attr( $event_title ); ?> url=<?php echo esc_attr( $event_link ); ?>">
+															<img src="<?php  echo plugin_dir_url( dirname( __FILE__ ) ) . 'public/images/twitter.png';; ?>" alt="twitter">
+														</a>
 													</li>
 												</ul>
 											</div>
@@ -879,7 +859,7 @@ if ( isset( $language ) && ! empty( $language ) ) {
 							</div>
 							<div class="col col-right">
 								<div class="event-placeholder-image">
-									<img src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/event-placeholder.png" alt="event-placeholder-image">
+									<img src="<?php echo get_the_post_thumbnail_url( $event_id, 'thumbnail' ); ?>" alt="event-placeholder-image">
 								</div>
 								<div class="sidebar">
 									<div class="sidebar-title">
