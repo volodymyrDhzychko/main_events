@@ -1,0 +1,75 @@
+/**
+ * All of the CSS for your public-facing functionality should be
+ * included in this file.
+ */
+
+/* Registration Form */
+*{-webkit-box-sizing:border-box;box-sizing:border-box}
+.admin-front-register-page h1{font-size:38px;margin: 0 0 20px}
+.admin-front-register-page h3{font-size:28px}
+.admin-front-register-page h4{font-size:20px}
+.admin-front-register-page p, .event-agenda-list li, .admin-front-register-page .registration-template .field-label{font-size:16px}
+.admin-front-register-page .page-intro-content{margin:0 0 2em}
+.admin-front-register-page .event-agenda{margin:0 0 2em}
+.admin-front-register-page .event-agenda ul{margin:0}
+.admin-front-register-page h3{padding:0;margin:0 0 20px}
+.admin-front-register-page .row{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start;-ms-flex-wrap:wrap;flex-wrap:wrap}
+.admin-front-register-page .row .col{padding:0 10px}
+.admin-front-register-page .row .col.col-left{width:70%}
+.admin-front-register-page .row .col.col-right{width:30%}
+.admin-front-register-page .data-item-main{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start;margin:0 0 1em}
+.admin-front-register-page .data-item-main h4{margin:0 0 10px}
+.admin-front-register-page .data-item-main p{margin:0 0 15px}
+.admin-front-register-page .registration-template{background-color:#fff;padding:10px;margin-bottom:20px}
+.admin-front-register-page .registration-template .field-label{margin-bottom:5px;display:block}
+.admin-front-register-page .registration-template .field-wrap{background-color:transparent;margin:0 0 20px}
+.admin-front-register-page .registration-template .field-wrap .field-container.ar-field{direction:rtl;text-align:right}
+.admin-front-register-page .registration-template .field-wrap .field-container.ar-field input[type="email"], .admin-front-register-page .registration-template .field-wrap .field-container.ar-field input[type="url"],.admin-front-register-page .registration-template .field-wrap .field-container.ar-field input[type="text"]{direction:rtl;text-align:right}
+.admin-front-register-page .registration-template .field-wrap input[type="mobile-number"]{-webkit-appearance:none;-moz-appearance:none;background:#fff;border-radius:0;border-style:solid;border-width:1px;-webkit-box-shadow:none;box-shadow:none;display:block;font-size:16px;letter-spacing:-0.015em;margin:0;max-width:100%;padding:1.5rem 1.8rem;width:100%}
+.admin-front-register-page .registration-template .field-wrap input.form-control, .admin-front-register-page .registration-template .field-wrap input.form-input, .admin-front-register-page .registration-template .field-wrap input[type="text"], .admin-front-register-page .registration-template .field-wrap input[type="email"], .admin-front-register-page .registration-template .field-wrap input[type="mobile-number"]{padding:10px}
+.admin-front-register-page .registration-template .field-wrap select{width:100%;padding:10px}
+.admin-front-register-page .registration-template .field-wrap .radio-group{width:100%;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-ms-flex-wrap:wrap;flex-wrap:wrap}
+.admin-front-register-page .registration-template .field-wrap .radio-group .formbuilder-radio{margin-right:20px}
+.admin-front-register-page .registration-template .field-wrap .field-container.ar-field .radio-group .formbuilder-radio{margin-right:0;margin-left:20px}
+.admin-front-register-page .registration-template .field-wrap .radio-group .formbuilder-radio input{margin-top:0}
+.admin-front-register-page .registration-template .field-wrap .radio-group .formbuilder-radio label{display:inline-block;margin:0}
+.admin-front-register-page .registration-template .field-wrap .field-container .field-group{display:-webkit-box;display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:flex-start;-ms-flex-align:flex-start;align-items:flex-start;width:100%}
+.admin-front-register-page .registration-template .field-wrap .field-container .field-group .file-upload-wrap{padding:0 8px 0 0;-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1}
+.admin-front-register-page .registration-template .field-wrap .field-container.ar-field .field-group .file-upload-wrap{padding:0 0 0 8px}
+.admin-front-register-page .registration-template .field-wrap .field-container .field-group .button-wrap{width:auto;text-align:right;position: relative;}
+.admin-front-register-page .registration-template .field-wrap .field-container .field-group .button-wrap label{width:100%;display:inline-block;vertical-align:middle;margin:0}
+.admin-front-register-page .registration-template .field-wrap .field-container.ar-field .field-group .button-wrap label{margin:0 7px 0 0}
+.admin-front-register-page .registration-template .field-wrap .field-container .field-group .button-wrap input{padding:11px 15px;width:100%;font-size:16px}
+.admin-front-register-page .registration-template .field-wrap .field-container .subscribe_now{vertical-align:middle;margin:0 7px 7px 0;}
+.admin-front-register-page .registration-template .field-wrap .field-container .subscribe_now + span{display:inline;vertical-align:middle;}
+.admin-front-register-page .registration-template .field-wrap .field-container.ar-field .subscribe_now{margin:0 0 7px 7px;}
+.admin-front-register-page .registration-template .button-wrap{margin:0 auto;width:100%;text-align:left}
+.admin-front-register-page .registration-template .button-wrap .button{text-decoration:none}
+
+/*** Event Detail & Registration form **/
+.admin-front-register-page.ar-wrap h1, .admin-front-register-page.ar-wrap h4, .admin-front-register-page.ar-wrap p, .admin-front-register-page.ar-wrap .registration-template .button-wrap, .admin-front-register-page.ar-wrap .data-item-main, .admin-front-register-page.ar-wrap h3{direction:rtl;text-align:right}
+.medatory{color:#a40000!important}
+span.error{color:red;font-size:14px}
+.admin-front-register-page .registration-template .field-label .validate, .admin-front-register-page .registration-template .captcha-field .validate{color:green;float:right;font-size:13px;font-style:italic}
+.admin-front-register-page .registration-template .field-label .not-validate, .admin-front-register-page .registration-template .captcha-field .not-validate{color:red;float:right;font-size:13px;font-style:italic}
+.admin-front-register-page.ar-wrap .registration-template .field-label .validate, .admin-front-register-page.ar-wrap .registration-template .captcha-field .validate{color:green;float:left;font-size:13px;font-style:italic}
+.admin-front-register-page.ar-wrap .registration-template .field-label .not-validate, .admin-front-register-page.ar-wrap .registration-template .captcha-field .not-validate{color:red;float:left;font-size:13px;font-style:italic}
+.admin-front-register-page.ar-wrap .captcha-field{direction:rtl}
+.google-captcha span.not-validate, .google-captcha span.validate{margin-top:-40px}
+.admin-front-register-page .registration-template span.tool-tip{background:#9c9c9c;color:#fff;height:17px;width:17px;display:inline-block;text-align:center;border-radius:50%;vertical-align:middle;margin:0 5px;position:relative}
+.admin-front-register-page .registration-template span.tool-tip[data-tip]::before{content:'';display:none;border-top:5px solid transparent;border-bottom:5px solid transparent;border-right:5px solid #444;position:absolute;top:50%;left:130%;z-index:8;-webkit-transform:translate(0, -50%);-ms-transform:translate(0, -50%);transform:translate(0, -50%)}
+.admin-front-register-page .registration-template span.tool-tip[data-tip]::after{display:none;content:attr(data-tip);position:absolute;top:50%;left:100%;width:200px;padding:5px 8px;background:#444;color:#fff;z-index:9;font-size:12px;line-height:18px;border-radius:3px;-webkit-transform:translate(5%, -50%);-ms-transform:translate(5%, -50%);transform:translate(5%, -50%)}
+.admin-front-register-page .registration-template span.tool-tip[data-tip]:hover::before, .admin-front-register-page .registration-template span.tool-tip[data-tip]:hover::after{display:block}
+.admin-front-register-page .registration-template span.tool-tip i{font-size:14px;line-height:20px;font-weight:700;margin-top:-1px;display:block;font-style:normal}
+.admin-front-register-page .registration-template .field-container.ar-field span.tool-tip[data-tip]::before{border-right:0;border-left:5px solid #444;left:-100%}
+.admin-front-register-page .registration-template .field-container.ar-field span.tool-tip[data-tip]::after{left:-100%;-webkit-transform:translate(-100%, -50%);-ms-transform:translate(-100%, -50%);transform:translate(-100%, -50%)}
+
+/* loader */
+body.is-loading::before{content:'';display:inline-block;width:80px;height:80px;position:fixed;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);-ms-transform:translate(-50%, -50%);transform:translate(-50%, -50%);background-image:url(../images/spinner-2x.svg);z-index:99999}
+body.is-loading::after{content:'';display:inline-block;width:100%;height:100%;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0, 0, 0, 0.058823529411764705);z-index:99999}
+body.is-loading #adminmenuwrap{opacity:0.7}
+
+/* Media Start */
+@media screen and (max-width:991px){.admin-front-register-page .registration-template .field-wrap .field-container .field-group .file-upload-wrap{width:100%;margin-bottom:10px;padding:0}.admin-front-register-page .registration-template .field-wrap .field-container .field-group .button-wrap{text-align:left;margin:0 auto 0 0}.admin-front-register-page .registration-template .field-wrap .field-container .field-group .button-wrap label{margin:0 7px 0 0}.admin-front-register-page .registration-template .field-wrap .field-container .field-group .button-wrap input{font-size:1.2rem}.admin-front-register-page .registration-template .field-wrap .field-container.ar-field .field-group .file-upload-wrap{padding:0}.admin-front-register-page .registration-template .field-wrap .field-container.ar-field .field-group .button-wrap{text-align:right;margin:0 0 0 auto}.admin-front-register-page .registration-template .field-wrap .field-container.ar-field .field-group .button-wrap label{margin:0 0 0 7px}}
+@media screen and (max-width:767px){.admin-front-register-page .row .col.col-left{width:100%}.admin-front-register-page .row .col.col-right{width:100%}.admin-front-register-page .registration-template .field-wrap .field-container .formbuilder-checkbox label{position:relative;display:inline-block}.admin-front-register-page .registration-template span.tool-tip{position:static}.admin-front-register-page .registration-template span.tool-tip[data-tip]::before,.admin-front-register-page .registration-template .field-container.ar-field span.tool-tip[data-tip]::before{top:25px;left:8px;-webkit-transform:translate(0, 0);-ms-transform:translate(0, 0);transform:translate(0, 0);border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:5px solid #444;border-top:0;display:none}.admin-front-register-page .registration-template span.tool-tip[data-tip]:hover::before{display:none}.admin-front-register-page .registration-template span.tool-tip[data-tip]::after,.admin-front-register-page .registration-template .field-container.ar-field span.tool-tip[data-tip]::after{top:100%;left:0;-webkit-transform:translate(0, 10px);-ms-transform:translate(0, 10px);transform:translate(0, 10px);width:100%}}
+@media screen and (max-width:480px){.admin-front-register-page .registration-template .field-wrap .captcha-field .g-recaptcha>div{-webkit-transform:scale(0.8);-ms-transform:scale(0.8);transform:scale(0.8);margin-left:-30px}}
