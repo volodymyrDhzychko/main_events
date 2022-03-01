@@ -211,7 +211,7 @@ class Events_Rest_Endpoints {
 		$type         = isset( $parameters['type'] ) ? $parameters['type'] : '';
 		$token        = isset( $parameters['key'] ) ? $parameters['key'] : '';
 		$domain       = isset( $parameters['domain'] ) ? $parameters['domain'] : '';
-		$child_eids   = isset( $parameters['eids'] ) ? explode( ',', $parameters['eids'] ) : '140';
+		$child_eids   = isset( $parameters['eids'] ) ? explode( ',', $parameters['eids'] ) : '';
 		$child_cats   = isset( $parameters['cats'] ) ? explode( ',', $parameters['cats'] ) : 'all';
 		$child_tags   = isset( $parameters['tags'] ) ? explode( ',', $parameters['tags'] ) : 'all';
 		$no_of_events = isset( $parameters['total'] ) && (int) $parameters['total'] > -1 ? (int) $parameters['total'] : '';
@@ -244,7 +244,7 @@ class Events_Rest_Endpoints {
 			$dffmain_meta = array();
 
 			$dffmain_meta['dffmain_post_title']      = 'title';
-			$dffmain_meta['events_overview'] = 'overview';
+			$dffmain_meta['events_overview']         = 'overview';
 			$dffmain_meta['dffmain_events_agenda']   = 'agenda';
 			$dffmain_meta['dffmain_event_location']  = 'location';
 
@@ -335,12 +335,13 @@ class Events_Rest_Endpoints {
             if( 'upcoming' === $type ) {
 			    $args['post_status'] = array( 'publish' );
             }
-			/**TODO */
+			/**TODO  unset($args['date_query']); */
 			unset($args['date_query']);
-			$the_query = new WP_Query( $args );
-			 
-			if ( $the_query->have_posts() ) {
 
+			$the_query = new WP_Query( $args );
+
+			if ( $the_query->have_posts() ) {
+// return  $the_query;
 				// Status Success.
 				if ( isset( $the_query->posts ) ) {
 					$events_data['status'] = 200;
@@ -614,7 +615,7 @@ class Events_Rest_Endpoints {
 			$dffmain_meta = array();
 
 			$dffmain_meta['dffmain_post_title']      = 'title';
-			$dffmain_meta['events_overview'] = 'overview';
+			$dffmain_meta['events_overview']         = 'overview';
 			$dffmain_meta['dffmain_events_agenda']   = 'agenda';
 			$dffmain_meta['dffmain_event_location']  = 'location';
 

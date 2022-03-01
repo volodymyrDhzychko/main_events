@@ -1,6 +1,6 @@
 <?php
 /**
- * Get multilingualpress translations
+ * Get multilingualpress translations 
  */
 $translations = dffmain_mlp_get_translations();
 
@@ -52,9 +52,9 @@ if ( isset( $submit_settings ) ) {
 $submit = filter_input( INPUT_POST, 'submit', FILTER_SANITIZE_STRING );
 
 foreach ( $translations as $translation ) {
-	$language        = $translation->language();
-	$language_name   = $language->isoName();
-	$is_rtl          = $language->isRtl();
+	$language      = $translation->language();
+	$language_name = $language->isoName();
+	$is_rtl        = $language->isRtl();
 
 	if ( isset( $submit ) ) {
 
@@ -111,7 +111,7 @@ foreach ( $translations as $translation ) {
 	$events_content_event_reminder               = get_option( 'events_content_event_reminder' );
 	$events_content_event_cancel                 = get_option( 'events_content_event_cancel' );
 
-	$subject_thank_you = get_option( 'subject_thank_you' );
+	$subject_thank_you      = get_option( 'subject_thank_you' );
 	$subject_event_reminder = get_option( 'subject_event_reminder' );
 	$subject_event_cancel   = get_option( 'subject_event_cancel' );
 }

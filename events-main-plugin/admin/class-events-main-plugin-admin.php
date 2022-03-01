@@ -54,6 +54,7 @@ class Events_Main_Plugin_Admin {
 		include plugin_dir_path( __FILE__ ) . 'partials/events_all_metaboxes.php';
 		include plugin_dir_path( __FILE__ ) . 'partials/registration-form-api-endpoint.php';
 		include plugin_dir_path( __FILE__ ) . 'partials/events_multilingualpress_helpers.php';
+		include plugin_dir_path( __FILE__ ) . 'partials/backwards_compatibility.php';
 
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
@@ -65,45 +66,48 @@ class Events_Main_Plugin_Admin {
 
 		/**custom page template for CPT dffmain-events */
 		add_filter( 'single_template', array( $this, 'redirect_dffmain_events_template' ), 99, 1 );
-		/**custom page template for Event (user registers on ) Thank you page */
-		add_filter( 'page_template', array( $this, 'redirect_dffmain_events_thank_you' ), 99, 1 );
+
 		/**create page on new site creation */
 		add_action( 'wp_initialize_site', array( $this, 'create_events_thank_you_page' ), 99, 1 );
+		
+		/**custom page template for Event  Thank you page */
+		add_filter( 'theme_page_templates', array( $this, 'register_events_thank_you_template' ) );
+		add_filter( 'template_include', array( $this, 'include_events_thank_you_template' ) );
 
-
-
-
+		/**custom post status - cancelled */
 		add_action( 'init', array( $this, 'event_register_custom_post_status' ) );		
 		add_action( 'admin_footer-post.php', array( $this, 'events_cancelled_status' ) );
 		add_action( 'transition_post_status', array( $this, 'events_post_status' ), 10, 3 );
 
-		add_action( 'add_meta_boxes', array( $this, 'event_editor_meta_boxes' ) );
-
+		// se3ttings pages
 		add_action('admin_menu',  array( $this, 'event_register_settings_page' ) );
-
-
-		add_action( 'save_post', array( $this, 'save_event_editor_meta_boxes' ) );
-		add_action( 'admin_menu', array( $this, 'events_remove_boxes' ), 20 );
-
 		add_action( 'network_admin_menu', array( $this, 'add_events_settings' ) );
 
+		// mets boxes
+		add_action( 'add_meta_boxes', array( $this, 'event_editor_meta_boxes' ) );
+		add_action( 'save_post', array( $this, 'save_event_editor_meta_boxes' ), 10, 3 );
+		add_action( 'admin_menu', array( $this, 'events_remove_boxes' ), 20 );
+
+		// add event categories at event edit screen
 		add_action( 'wp_ajax_category_add_submit', array( $this, 'category_add_submit' ) );
 		add_action( 'wp_ajax_nopriv_category_add_submit', array( $this, 'category_add_submit' ) );
 
-		add_action( 'wp_ajax_cancel_event_ajax', array( $this, 'cancel_event_ajax' ) );
-		add_action( 'wp_ajax_trash_event_ajax', array( $this, 'trash_event_ajax' ) );
+		// add event tags at event edit screen
 		add_action( 'wp_ajax_tags_add_submit', array( $this, 'tags_add_submit' ) );
 		add_action( 'wp_ajax_nopriv_tags_add_submit', array( $this, 'tags_add_submit' ) );
-		add_action( 'wp_ajax_category_add_arabic_submit', array( $this, 'category_add_arabic_submit' ) );
-		add_action( 'wp_ajax_nopriv_category_add_arabic_submit', array( $this, 'category_add_arabic_submit' ) );
-		add_action( 'wp_ajax_tags_add_arabic_submit', array( $this, 'tags_add_arabic_submit' ) );
-		add_action( 'wp_ajax_nopriv_tags_add_arabic_submit', array( $this, 'tags_add_arabic_submit' ) );
+
+		add_action( 'wp_ajax_cancel_event_ajax', array( $this, 'cancel_event_ajax' ) );
+		add_action( 'wp_ajax_trash_event_ajax', array( $this, 'trash_event_ajax' ) );
+
+		// manage event sharing 
 		add_action( 'wp_ajax_add_child_sites_action', array( $this, 'add_child_sites_action' ) );
 		add_action( 'wp_ajax_nopriv_add_child_sites_action', array( $this, 'add_child_sites_action' ) );
 		add_action( 'wp_ajax_delete_sites_action', array( $this, 'delete_sites_action' ) );
 		add_action( 'wp_ajax_nopriv_delete_sites_action', array( $this, 'delete_sites_action' ) );
 
+		// add placeholder
 		add_filter( 'enter_title_here', array( $this, 'dff_event_title_place_holder' ), 20, 2 );
+
 		add_filter( 'manage_dffmain-events_posts_columns', array( $this, 'set_dff_events_list_columns' ) );
 		add_action( 'manage_dffmain-events_posts_custom_column', array( $this, 'custom_dff_events_column_value' ), 10, 2 );
 		add_filter( 'bulk_actions-edit-dffmain-events', array( $this, 'remove_edit_from_bulk_actions_events' ) );
@@ -149,6 +153,132 @@ class Events_Main_Plugin_Admin {
 		// remove Visibility Option
 		add_action( 'admin_head', array( $this, 'event_wpseNoVisibility' ) ); /**TODO remove better */
 
+		add_action('multilingualpress.metabox_after_relate_posts', array( $this, 'copy_on_multilingual_add_translation' ), 10, 2);
+		add_action( 'wp_insert_post', array( $this, 'update_common_meta_fields' ) );
+
+	}
+
+	/**
+	 * register events thank you page template
+	 *
+	 * @param [array] $templates
+	 * 
+	 * @return [array] $templates
+	 */
+	function register_events_thank_you_template( $templates ) {
+
+		$templates['template-event-registration-thank-you.php'] = 'Thank you Events';
+	
+		return $templates;
+	}
+
+	/**
+	 * include events thank you page template
+	 *
+	 * @param [array] $template
+	 * 
+	 * @return [array] $template
+	 */
+	function include_events_thank_you_template( $template ) {
+
+		$page_template = get_post_meta( get_the_ID(), '_wp_page_template', true );
+	
+		if ( 'template-event-registration-thank-you.php' == basename( $page_template ) ) {
+	
+			return wp_normalize_path( EVENTS_MAIN_PLUGIN_PATH . '/templates/template-event-registration-thank-you.php' );
+		}
+	
+		return $template;
+	}
+
+	/**
+	 * copy meta fields on post creation by multilingvalPress
+	 */
+	public function update_common_meta_fields( $post_id ) {
+
+		if ( 'dffmain-events' == get_post_type( $post_id ) ) {
+
+			if ( ! wp_is_post_revision( $post_id ) ){
+				remove_action( 'wp_insert_post', array( $this, 'update_common_meta_fields' ) );
+		
+				$post_data  = get_post( $post_id );
+				$post_metas = get_post_meta( $post_id );
+			
+				$html  = '';
+				$html .= get_post_meta( $post_id, 'events_overview' );
+				$html .= '<h3>Event Agenda</h3>';
+				$html .= get_post_meta( $post_id, 'dffmain_events_agenda' );
+			
+				
+				$add_to_post = [
+					'ID'           => $post_id,
+					'post_content' => $html,
+				];
+				wp_update_post( $add_to_post );
+			
+			
+				update_post_meta( $post_id, 'event_location', get_post_meta( $post_id, 'dffmain_event_location') );
+				update_post_meta( $post_id, 'event_cost_name', $post_metas['event_cost_name'][0] );
+				update_post_meta( $post_id, 'event_date_select', $post_metas['event_date_select'][0] );
+				update_post_meta( $post_id, 'event_google_map_input', $post_metas['event_google_map_input'][0] );
+				update_post_meta( $post_id, 'event_slug', get_post_field( 'post_name', $post_id ) );
+				update_post_meta( $post_id, 'eid', $post_id );
+			
+				/**TODO cron??? */
+				update_post_meta( $post_id, 'upcoming', 'yes' );
+			
+				if( isset( $post_metas['event_end_date_select'][0] ) && !empty( $post_metas['event_end_date_select'][0] ) ) {
+					update_post_meta( $post_id, 'event_end_date_select', $post_metas['event_end_date_select'][0] );
+				} else {
+					update_post_meta( $post_id, 'event_time_start_select', $post_metas['event_time_start_select'][0] );
+					update_post_meta( $post_id, 'event_time_end_select', $post_metas['event_time_end_select'][0] );
+				}
+		
+				add_action( 'wp_insert_post', array( $this, 'update_common_meta_fields' ) );
+			}
+		}
+	}
+
+	/**
+	 * copy meta fields on post creation by multilingvalPress
+	 */
+	public function copy_on_multilingual_add_translation ( $context, $request ) {
+
+		switch_to_blog($context->sourceSiteId());
+
+			$event_cost_name                  = get_post_meta( $context->sourcePostId(), 'event_cost_name', true );
+			$event_reminder_select_box        = get_post_meta( $context->sourcePostId(), 'event_reminder_select_box', true );
+			$event_date_select                = get_post_meta( $context->sourcePostId(), 'event_date_select', true );
+			$event_end_date_select            = get_post_meta( $context->sourcePostId(), 'event_end_date_select', true );
+			$event_time_start_select          = get_post_meta( $context->sourcePostId(), 'event_time_start_select', true );
+			$event_time_end_select            = get_post_meta( $context->sourcePostId(), 'event_time_end_select', true );
+			$event_google_map_input           = get_post_meta( $context->sourcePostId(), 'event_google_map_input', true );
+			$event_detail_img                 = get_post_meta( $context->sourcePostId(), 'event_detail_img', true );
+			$security_code_checkbox           = get_post_meta( $context->sourcePostId(), 'security_code_checkbox', true );
+			$event_security_code              = get_post_meta( $context->sourcePostId(), 'event_security_code', true );
+			$event_reminder_date              = get_post_meta( $context->sourcePostId(), 'event_reminder_date', true );
+			$event_special_instruction        = get_post_meta( $context->sourcePostId(), 'event_special_instruction', true );
+			$google_embed_maps_code           = get_post_meta( $context->sourcePostId(), 'google_embed_maps_code', true );
+			$event_attendee_limit_count       = get_post_meta( $context->sourcePostId(), 'event_attendee_limit_count', true );
+			$event_registration_close_message = get_post_meta( $context->sourcePostId(), 'event_registration_close_message', true );
+
+		restore_current_blog();
+
+		update_post_meta($context->remotePostId(), 'event_cost_name', $event_cost_name);
+		update_post_meta($context->remotePostId(), 'event_reminder_select_box', $event_reminder_select_box);
+		update_post_meta($context->remotePostId(), 'event_date_select', $event_date_select);
+		update_post_meta($context->remotePostId(), 'event_end_date_select', $event_end_date_select);
+		update_post_meta($context->remotePostId(), 'event_time_start_select', $event_time_start_select);
+		update_post_meta($context->remotePostId(), 'event_time_end_select', $event_time_end_select);
+		update_post_meta($context->remotePostId(), 'event_google_map_input', $event_google_map_input);
+		update_post_meta($context->remotePostId(), 'event_detail_img', $event_detail_img);
+		update_post_meta($context->remotePostId(), 'security_code_checkbox', $security_code_checkbox);
+		update_post_meta($context->remotePostId(), 'event_security_code', $event_security_code);
+		update_post_meta($context->remotePostId(), 'event_reminder_date', $event_reminder_date);
+		update_post_meta($context->remotePostId(), 'event_special_instruction', $event_special_instruction);
+		update_post_meta($context->remotePostId(), 'google_embed_maps_code', $google_embed_maps_code);
+		update_post_meta($context->remotePostId(), 'event_attendee_limit_count', $event_attendee_limit_count);
+		update_post_meta($context->remotePostId(), 'event_registration_close_message', $event_registration_close_message);	
 	}
 
 	/**
@@ -263,7 +393,7 @@ class Events_Main_Plugin_Admin {
 			'menu_position'       => 5,
 			'can_export'          => true,
 			'exclude_from_search' => false,
-			'has_archive'         => false,
+			'has_archive'         => true,
 			'exclude_from_search' => false,
 			'publicly_queryable'  => true,
 			'capability_type'     => 'page',
@@ -401,7 +531,8 @@ class Events_Main_Plugin_Admin {
 	public function redirect_dffmain_events_thank_you( $template ) {
 
 		if ( is_page('event-registration-thank-you') ) {
-			$template = EVENTS_MAIN_PLUGIN_PATH . 'templates/template-event_thank_you.php';
+			$template = EVENTS_MAIN_PLUGIN_PATH . '/templates/template-event-registration-thank-you.php';
+			// $template = home_url();
 		}
 		return $template;
 	}
@@ -491,7 +622,7 @@ class Events_Main_Plugin_Admin {
 
 		$post_id = $eid;
 
-		$settings_array_get          = get_option( 'events_general_settings' );
+		$settings_array_get          = main_site_get_option( 'events_general_settings' );
 		$events_general_settings_get = json_decode( $settings_array_get );
 		$events_general_settings_get = (array) $events_general_settings_get;
 
@@ -501,12 +632,12 @@ class Events_Main_Plugin_Admin {
 
 		$url = 'https://api.sendgrid.com/';
 
-		$dffmain_event_content          = get_option( 'events_content_event_cancel' );
-		$subject_event_cancel = get_option( 'subject_event_cancel' );
-
+		$subject_event_cancel_arr  = main_site_get_option( 'subject_event_cancel' );
+		$dffmain_event_content_arr = main_site_get_option( 'events_content_event_cancel' );
+		
 		$dffmain_post_title = get_post_meta( $post_id, 'dffmain_post_title', true );
 
-		$event_date = get_post_meta( $post_id, 'event_date_select', true );
+		$event_date     = get_post_meta( $post_id, 'event_date_select', true );
 		$event_end_date = get_post_meta( $post_id, 'event_end_date_select', true );
 
 		$event_time_start_select = get_post_meta( $post_id, 'event_time_start_select', true );
@@ -554,6 +685,10 @@ class Events_Main_Plugin_Admin {
 				/** TODO choose language  
 				 *  if ( 'en' === $attendee_data['languageType'] ) {
 				*/
+				$curr_attendee_lang = 'English';
+				if ( 'ar' === $attendee_data['languageType'] ) {
+					$curr_attendee_lang = 'Arabic';
+				}
 				$event_date_en = str_replace( ' - ', ' to ', $event_date );
 				$dffmain_attendee_data['e_attendee_fname'][] = $attendee_data['FirstName'];
 				$dffmain_attendee_data['e_attendee_lname'][] = $attendee_data['LastName'];
@@ -580,22 +715,24 @@ class Events_Main_Plugin_Admin {
 
 			foreach( $dffmain_attendee_data['Email'] as $k => $v ) {
 
-				$subject_event_cancel = str_replace( '{{date/time}}', $dffmain_attendee_data['date_output'][$k], $subject_event_cancel );
-				$subject_event_cancel = str_replace( '{{e_attendee_fname}}', $dffmain_attendee_data['e_attendee_fname'][$k], $subject_event_cancel );
-				$subject_event_cancel = str_replace( '{{e_attendee_lname}}', $dffmain_attendee_data['e_attendee_lname'][$k], $subject_event_cancel );
-				$subject_event_cancel = str_replace( '{{e_eventname}}', $dffmain_attendee_data['event_name'][$k], $subject_event_cancel );
-				$subject_event_cancel = str_replace( '{{date}}', $dffmain_attendee_data['date'][$k], $subject_event_cancel );
-				$subject_event_cancel = str_replace( '{{location}}', $dffmain_attendee_data['location'][$k], $subject_event_cancel );
-				$subject_event_cancel = str_replace( '{{time}}', $dffmain_attendee_data['time_frame'][$k], $subject_event_cancel );
+				$subject_event_cancel = str_replace( '{{date/time}}', $dffmain_attendee_data['date_output'][$k], $subject_event_cancel_arr[$curr_attendee_lang] );
+				$subject_event_cancel = str_replace( '{{e_attendee_fname}}', $dffmain_attendee_data['e_attendee_fname'][$k], $subject_event_cancel_arr[$curr_attendee_lang] );
+				$subject_event_cancel = str_replace( '{{e_attendee_lname}}', $dffmain_attendee_data['e_attendee_lname'][$k], $subject_event_cancel_arr[$curr_attendee_lang] );
+				$subject_event_cancel = str_replace( '{{e_eventname}}', $dffmain_attendee_data['event_name'][$k], $subject_event_cancel_arr[$curr_attendee_lang] );
+				$subject_event_cancel = str_replace( '{{date}}', $dffmain_attendee_data['date'][$k], $subject_event_cancel_arr[$curr_attendee_lang] );
+				$subject_event_cancel = str_replace( '{{location}}', $dffmain_attendee_data['location'][$k], $subject_event_cancel_arr[$curr_attendee_lang] );
+				$subject_event_cancel = str_replace( '{{time}}', $dffmain_attendee_data['time_frame'][$k], $subject_event_cancel_arr[$curr_attendee_lang] );
 
-				$dffmain_event_content = str_replace( '{{date/time}}', $dffmain_attendee_data['date_output'][$k], $dffmain_event_content );
-				$dffmain_event_content = str_replace( '{{e_attendee_fname}}', $dffmain_attendee_data['e_attendee_fname'][$k], $dffmain_event_content );
-				$dffmain_event_content = str_replace( '{{e_attendee_lname}}', $dffmain_attendee_data['e_attendee_lname'][$k], $dffmain_event_content );
-				$dffmain_event_content = str_replace( '{{e_eventname}}', $dffmain_attendee_data['event_name'][$k], $dffmain_event_content );
-				$dffmain_event_content = str_replace( '{{date}}', $dffmain_attendee_data['date'][$k], $dffmain_event_content );
-				$dffmain_event_content = str_replace( '{{location}}', $dffmain_attendee_data['location'][$k], $dffmain_event_content );
-				$dffmain_event_content = str_replace( '{{time}}', $dffmain_attendee_data['time_frame'][$k], $dffmain_event_content );
+				$dffmain_event_content = str_replace( '{{date/time}}', $dffmain_attendee_data['date_output'][$k], $dffmain_event_content_arr[$curr_attendee_lang] );
+				$dffmain_event_content = str_replace( '{{e_attendee_fname}}', $dffmain_attendee_data['e_attendee_fname'][$k], $dffmain_event_content_arr[$curr_attendee_lang] );
+				$dffmain_event_content = str_replace( '{{e_attendee_lname}}', $dffmain_attendee_data['e_attendee_lname'][$k], $dffmain_event_content_arr[$curr_attendee_lang] );
+				$dffmain_event_content = str_replace( '{{e_eventname}}', $dffmain_attendee_data['event_name'][$k], $dffmain_event_content_arr[$curr_attendee_lang] );
+				$dffmain_event_content = str_replace( '{{date}}', $dffmain_attendee_data['date'][$k], $dffmain_event_content_arr[$curr_attendee_lang] );
+				$dffmain_event_content = str_replace( '{{location}}', $dffmain_attendee_data['location'][$k], $dffmain_event_content_arr[$curr_attendee_lang] );
+				$dffmain_event_content = str_replace( '{{time}}', $dffmain_attendee_data['time_frame'][$k], $dffmain_event_content_arr[$curr_attendee_lang] );
 				
+				$dear_text = ( 'English' == $curr_attendee_lang ) ? 'Dear' : 'السيد';
+
 				$params_ar = (object) array(
 					'from' => array( 'email' => 'no-reply@dubaifuture.ae' ),
 					'personalizations' => array( 
@@ -605,7 +742,7 @@ class Events_Main_Plugin_Admin {
 								'EMAIL_SUBJECT' => $subject_event_cancel,
 								'EMAIL_CONTENT' => $dffmain_event_content,
 								'DISPLAY_NAME' => $dffmain_attendee_data['e_attendee_fname'][$k],
-								'HELLO' => 'Dear',
+								'HELLO' => $dear_text,
 							),
 						)
 					),
@@ -621,11 +758,12 @@ class Events_Main_Plugin_Admin {
 					)
 				);
 
-				$subject_event_cancel = str_replace( $dffmain_attendee_data['e_attendee_fname'][$k], '{{e_attendee_fname}}', $subject_event_cancel );
-				$subject_event_cancel = str_replace( $dffmain_attendee_data['e_attendee_lname'][$k], '{{e_attendee_lname}}', $subject_event_cancel );
+				/** TODO - can remove? */
+				// $subject_event_cancel = str_replace( $dffmain_attendee_data['e_attendee_fname'][$k], '{{e_attendee_fname}}', $subject_event_cancel );
+				// $subject_event_cancel = str_replace( $dffmain_attendee_data['e_attendee_lname'][$k], '{{e_attendee_lname}}', $subject_event_cancel );
 
-				$dffmain_event_content = str_replace( $dffmain_attendee_data['e_attendee_fname'][$k], '{{e_attendee_fname}}', $dffmain_event_content );
-				$dffmain_event_content = str_replace( $dffmain_attendee_data['e_attendee_lname'][$k], '{{e_attendee_lname}}', $dffmain_event_content );
+				// $dffmain_event_content = str_replace( $dffmain_attendee_data['e_attendee_fname'][$k], '{{e_attendee_fname}}', $dffmain_event_content );
+				// $dffmain_event_content = str_replace( $dffmain_attendee_data['e_attendee_lname'][$k], '{{e_attendee_lname}}', $dffmain_event_content );
 
 			}
 
@@ -827,11 +965,9 @@ class Events_Main_Plugin_Admin {
 	public function events_remove_boxes() {
 
 		remove_meta_box( 'events_categoriesdiv', 'dffmain-events', 'side' );
-		remove_meta_box( 'events_tagsdiv', 'dffmain-events', 'side' );
+		remove_meta_box( 'tagsdiv-events_tags', 'dffmain-events', 'side' );
 		remove_meta_box( 'authordiv', 'registration-forms', 'side' );
 		remove_meta_box( 'slugdiv', 'registration-forms', 'side' );
-		remove_meta_box( 'events_arabic_tagsdiv', 'dffmain-events', 'side' );
-
 	}
 
 	/**
@@ -855,8 +991,8 @@ class Events_Main_Plugin_Admin {
 	 *
 	 * @throws Exception
 	 */
-	public function save_event_editor_meta_boxes( $post_id ) {
-
+	public function save_event_editor_meta_boxes( $post_id, $post, $update ) {
+// update_option('post_check', $_POST);
 		if ( !ms_is_switched() ) {
 
 			$dffmain_post_title = filter_input( INPUT_POST, 'dffmain_post_title', FILTER_SANITIZE_STRING );
@@ -890,136 +1026,126 @@ class Events_Main_Plugin_Admin {
 
 			update_post_meta( $post_id, 'emp_category', $emp_category );
 			update_post_meta( $post_id, 'emp_tags', $emp_tags );
-		}
 
-		/**
-		 * setings to update globaly (over all translations)
-		 */
+			/**
+			 * setings to update globaly (over all translations)
+			 */
 
-		// Cost settings TODO -- not saving -- maybe filter in theme
-		$event_cost_name = filter_input( INPUT_POST, 'event_cost_name', FILTER_SANITIZE_STRING );
-		$event_cost_name = isset( $event_cost_name ) ? esc_html( $event_cost_name ) : '';
+			// Cost settings TODO -- not saving -- maybe filter in theme
+			$event_cost_name = filter_input( INPUT_POST, 'event_cost_name', FILTER_SANITIZE_STRING );
+			$event_cost_name = isset( $event_cost_name ) ? esc_html( $event_cost_name ) : '';
 
-		// Event Reminder settings
-		$event_reminder_select_box = filter_input( INPUT_POST, 'event_reminder_select_box', FILTER_SANITIZE_STRING );
-		$event_reminder_select_box = isset( $event_reminder_select_box ) ? esc_html( $event_reminder_select_box ) : '';
+			// Event Reminder settings
+			$event_reminder_select_box = filter_input( INPUT_POST, 'event_reminder_select_box', FILTER_SANITIZE_STRING );
+			$event_reminder_select_box = isset( $event_reminder_select_box ) ? esc_html( $event_reminder_select_box ) : '';
 
-		// Date settings
-		$event_date_select = filter_input( INPUT_POST, 'event_date_select', FILTER_SANITIZE_STRING );
-		$event_date_select = isset( $event_date_select ) ? esc_html( $event_date_select ) : '';
+			// Date settings
+			$event_date_select = filter_input( INPUT_POST, 'event_date_select', FILTER_SANITIZE_STRING );
+			$event_date_select = isset( $event_date_select ) ? esc_html( $event_date_select ) : '';
 
-		// End date settings
-		$event_end_date_select = filter_input( INPUT_POST, 'event_end_date_select', FILTER_SANITIZE_STRING );
-		$event_end_date_select = isset( $event_end_date_select ) ? esc_html( $event_end_date_select ) : '';
+			// End date settings
+			$event_end_date_select = filter_input( INPUT_POST, 'event_end_date_select', FILTER_SANITIZE_STRING );
+			$event_end_date_select = isset( $event_end_date_select ) ? esc_html( $event_end_date_select ) : '';
 
-		// Time settings
-		$event_time_start_select = filter_input( INPUT_POST, 'event_time_start_select', FILTER_SANITIZE_STRING );
-		$event_time_start_select = isset( $event_time_start_select ) ? esc_html( $event_time_start_select ) : '';
-		$event_time_end_select = filter_input( INPUT_POST, 'event_time_end_select', FILTER_SANITIZE_STRING );
-		$event_time_end_select = isset( $event_time_end_select ) ? esc_html( $event_time_end_select ) : '';
-
-
-		// Google map settings
-		$event_google_map_input = filter_input( INPUT_POST, 'event_google_map_input', FILTER_SANITIZE_STRING );
-		$event_google_map_input = isset( $event_google_map_input ) ? esc_html( $event_google_map_input ) : '';
-
-		// Detail image
-		$meta_key = filter_input( INPUT_POST, 'event_detail_img', FILTER_SANITIZE_STRING );
-		$meta_key = isset( $meta_key ) ? $meta_key : '';
-
-		// Security Code Setting
-		$security_code_checkbox = filter_input( INPUT_POST, 'security_code_checkbox', FILTER_SANITIZE_STRING );
-		$security_code_checkbox = isset( $security_code_checkbox ) ? $security_code_checkbox : '';
-		$event_security_code = filter_input( INPUT_POST, 'event_security_code', FILTER_SANITIZE_STRING );
-		$event_security_code = isset( $event_security_code ) ? $event_security_code : '';
+			// Time settings
+			$event_time_start_select = filter_input( INPUT_POST, 'event_time_start_select', FILTER_SANITIZE_STRING );
+			$event_time_start_select = isset( $event_time_start_select ) ? esc_html( $event_time_start_select ) : '';
+			$event_time_end_select = filter_input( INPUT_POST, 'event_time_end_select', FILTER_SANITIZE_STRING );
+			$event_time_end_select = isset( $event_time_end_select ) ? esc_html( $event_time_end_select ) : '';
 
 
-		// Reminder date
-		$date = date( $event_date_select );
-		$event_reminder_date = date( 'Y-m-d', strtotime( $date . ' - ' . $event_reminder_select_box . ' days' ) );
+			// Google map settings
+			$event_google_map_input = filter_input( INPUT_POST, 'event_google_map_input', FILTER_SANITIZE_STRING );
+			$event_google_map_input = isset( $event_google_map_input ) ? esc_html( $event_google_map_input ) : '';
+
+			// Detail image
+			$meta_key = filter_input( INPUT_POST, 'event_detail_img', FILTER_SANITIZE_STRING );
+			$meta_key = isset( $meta_key ) ? $meta_key : '';
+
+			// Security Code Setting
+			$security_code_checkbox = filter_input( INPUT_POST, 'security_code_checkbox', FILTER_SANITIZE_STRING );
+			$security_code_checkbox = isset( $security_code_checkbox ) ? $security_code_checkbox : '';
+			$event_security_code = filter_input( INPUT_POST, 'event_security_code', FILTER_SANITIZE_STRING );
+			$event_security_code = isset( $event_security_code ) ? $event_security_code : '';
 
 
-		// Special instruction
-		$event_special_instruction = filter_input( INPUT_POST, 'event_special_instruction', FILTER_SANITIZE_STRING );
-		$event_special_instruction = isset( $event_special_instruction ) ? $event_special_instruction : '';
-
-		// Google maps embeded code TODO -- not saving -- maybe filter in theme
-		$allow_tags = array(
-			'iframe' => array(
-				'src'             => array(),
-				'width'           => array(),
-				'height'          => array(),
-				'frameborder'     => array(),
-				'style'           => array(),
-				'allowfullscreen' => array(),
-				'aria-hidden'     => array(),
-				'tabindex'        => array(),
-			),
-		);
-		$google_embed_maps_code = isset( $_POST['google_embed_maps_code'] ) ? wp_kses( $_POST['google_embed_maps_code'], $allow_tags ) : "";
-		
-		
-
-		// Attendee meta data
-		$event_attendee_limit_count = filter_input( INPUT_POST, 'event_attendee_limit_count', FILTER_SANITIZE_STRING );
-		$event_attendee_limit_count = isset( $event_attendee_limit_count ) ? $event_attendee_limit_count : '';
-		$event_registration_close_message = filter_input( INPUT_POST, 'event_registration_close_message', FILTER_SANITIZE_STRING );
-		$event_registration_close_message = isset( $event_registration_close_message ) ? $event_registration_close_message : '';
+			// Reminder date
+			$date = date( $event_date_select );
+			$event_reminder_date = date( 'Y-m-d', strtotime( $date . ' - ' . $event_reminder_select_box . ' days' ) );
 
 
-		$current_site_id = get_current_blog_id();
-		$translations = multilingualpress_get_ids( $post_id, $current_site_id );
+			// Special instruction
+			$event_special_instruction = filter_input( INPUT_POST, 'event_special_instruction', FILTER_SANITIZE_STRING );
+			$event_special_instruction = isset( $event_special_instruction ) ? $event_special_instruction : '';
 
-		foreach ( $translations as $site_id => $post_id ) {
+			// Google maps embeded code TODO -- not saving -- maybe filter in theme
+			$allow_tags = array(
+				'iframe' => array(
+					'src'             => array(),
+					'width'           => array(),
+					'height'          => array(),
+					'frameborder'     => array(),
+					'style'           => array(),
+					'allowfullscreen' => array(),
+					'aria-hidden'     => array(),
+					'tabindex'        => array(),
+				),
+			);
+			$google_embed_maps_code = isset( $_POST['google_embed_maps_code'] ) ? wp_kses( $_POST['google_embed_maps_code'], $allow_tags ) : "";
+			
+			
 
-			switch_to_blog( $site_id );
-
-				// Cost settings
-				update_post_meta( $post_id, 'event_cost_name', $event_cost_name );
-
-				// Reminder settings
-				update_post_meta( $post_id, 'event_reminder_select_box', $event_reminder_select_box );
-
-				// Date settings
-				update_post_meta( $post_id, 'event_date_select', $event_date_select );
-
-				// End date settings
-				update_post_meta( $post_id, 'event_end_date_select', $event_end_date_select );
-
-				// Time settings
-				update_post_meta( $post_id, 'event_time_start_select', $event_time_start_select );
-				update_post_meta( $post_id, 'event_time_end_select', $event_time_end_select );
-
-				// Google map settings
-				update_post_meta( $post_id, 'event_google_map_input', $event_google_map_input );
-
-				// Detail image
-				update_post_meta( $post_id, 'event_detail_img', sanitize_text_field( $meta_key ) );
-
-				// Security Code Setting
-				update_post_meta( $post_id, 'security_code_checkbox', $security_code_checkbox );
-				update_post_meta( $post_id, 'event_security_code', $event_security_code );
-
-				// Reminder date
-				update_post_meta( $post_id, 'event_reminder_date', $event_reminder_date );
-
-				// Special instruction
-				update_post_meta( $post_id, 'event_special_instruction', $event_special_instruction );
-
-				// Google maps embeded code
-				update_post_meta( $post_id, 'google_embed_maps_code', $google_embed_maps_code );
+			// Attendee meta data
+			$event_attendee_limit_count = filter_input( INPUT_POST, 'event_attendee_limit_count', FILTER_SANITIZE_STRING );
+			$event_attendee_limit_count = isset( $event_attendee_limit_count ) ? $event_attendee_limit_count : '';
+			$event_registration_close_message = filter_input( INPUT_POST, 'event_registration_close_message', FILTER_SANITIZE_STRING );
+			$event_registration_close_message = isset( $event_registration_close_message ) ? $event_registration_close_message : '';
 
 
-				// Attendee meta data
-				update_post_meta( $post_id, 'event_attendee_limit_count', $event_attendee_limit_count );
-				update_post_meta( $post_id, 'event_registration_close_message', $event_registration_close_message );
+			// Cost settings
+			update_post_meta( $post_id, 'event_cost_name', $event_cost_name );
 
-			restore_current_blog();
-		}
+			// Reminder settings
+			update_post_meta( $post_id, 'event_reminder_select_box', $event_reminder_select_box );
+
+			// Date settings
+			update_post_meta( $post_id, 'event_date_select', $event_date_select );
+
+			// End date settings
+			update_post_meta( $post_id, 'event_end_date_select', $event_end_date_select );
+
+			// Time settings
+			update_post_meta( $post_id, 'event_time_start_select', $event_time_start_select );
+			update_post_meta( $post_id, 'event_time_end_select', $event_time_end_select );
+
+			// Google map settings
+			update_post_meta( $post_id, 'event_google_map_input', $event_google_map_input );
+
+			// Detail image
+			update_post_meta( $post_id, 'event_detail_img', sanitize_text_field( $meta_key ) );
+
+			// Security Code Setting
+			update_post_meta( $post_id, 'security_code_checkbox', $security_code_checkbox );
+			update_post_meta( $post_id, 'event_security_code', $event_security_code );
+
+			// Reminder date
+			update_post_meta( $post_id, 'event_reminder_date', $event_reminder_date );
+
+			// Special instruction
+			update_post_meta( $post_id, 'event_special_instruction', $event_special_instruction );
+
+			// Google maps embeded code
+			update_post_meta( $post_id, 'google_embed_maps_code', $google_embed_maps_code );
+
+
+			// Attendee meta data
+			update_post_meta( $post_id, 'event_attendee_limit_count', $event_attendee_limit_count );
+			update_post_meta( $post_id, 'event_registration_close_message', $event_registration_close_message );
+		} /**if ( !ms_is_switched() ) { */
 	}
 
 	/**
-	 * Ajax function for add english category
+	 * Ajax function for add category
 	 */
 	public function category_add_submit() {
 		$newevents_categories = filter_input( INPUT_POST, 'newevents_categories', FILTER_SANITIZE_STRING );
@@ -1084,88 +1210,6 @@ class Events_Main_Plugin_Admin {
 					checked
 				>
 				<?php echo esc_html( $term_name->name ); ?>
-				</label>
-			</li>
-			<?php
-		}
-
-		wp_die();
-	}
-
-	/**
-	 * Ajax function for add arabic category
-	 */
-	public function category_add_arabic_submit() {
-
-		$newevents_arabic_categories        = filter_input( INPUT_POST, 'newevents_arabic_categories', FILTER_SANITIZE_STRING );
-		$newevents_arabic_categories        = isset( $newevents_arabic_categories ) ? $newevents_arabic_categories : '';
-		$newevents_arabic_categories_parent = filter_input( INPUT_POST, 'newevents_arabic_categories_parent', FILTER_SANITIZE_NUMBER_INT );
-		$newevents_arabic_categories_parent = isset( $newevents_arabic_categories_parent ) ? $newevents_arabic_categories_parent : '';
-
-		if ( '-1' === $newevents_arabic_categories_parent ) {
-			$newevents_arabic_categories_parent = '0';
-		}
-
-		$inserted_term = wp_insert_term(
-			$newevents_arabic_categories,
-			'events_arabic_categories',
-			array(
-				'parent' => $newevents_arabic_categories_parent,
-			)
-		);
-
-		if ( isset( $inserted_term ) && ! empty( $inserted_term ) ) {
-			$term_name = get_term_by( 'id', $inserted_term['term_id'], 'events_arabic_categories' );
-			?>
-			<li><label class="post_type_lable" for="<?php echo esc_attr( $inserted_term['term_id'] ); ?>"><input
-						name="emp_arabic_category[]" type="checkbox"
-						id="<?php echo esc_attr( $inserted_term['term_id'] ); ?>"
-						value="<?php echo esc_attr( $inserted_term['term_id'] ); ?>"
-						checked><?php echo esc_html( $term_name->name ); ?></label></li>
-											<?php
-		}
-
-		?>
-		<?php
-
-		wp_die();
-	}
-
-	/**
-	 * Ajax function for add arabic tag
-	 */
-	public function tags_add_arabic_submit() {
-
-		$newevents_arabic_tags        = filter_input( INPUT_POST, 'newevents_arabic_tags', FILTER_SANITIZE_STRING );
-		$newevents_arabic_tags        = isset( $newevents_arabic_tags ) ? $newevents_arabic_tags : '';
-		$newevents_arabic_tags_parent = filter_input( INPUT_POST, 'newevents_arabic_tags_parent', FILTER_SANITIZE_NUMBER_INT );
-		$newevents_arabic_tags_parent = isset( $newevents_arabic_tags_parent ) ? $newevents_arabic_tags_parent : '';
-
-		if ( '-1' === $newevents_arabic_tags_parent ) {
-			$newevents_arabic_tags_parent = '0';
-		}
-
-		$inserted_term = wp_insert_term(
-			$newevents_arabic_tags,
-			'events_arabic_tags',
-			array(
-				'parent' => $newevents_arabic_tags_parent,
-			)
-		);
-
-		if ( isset( $inserted_term ) && ! empty( $inserted_term ) ) {
-			$term_name = get_term_by( 'id', $inserted_term['term_id'], 'events_arabic_tags' );
-			?>
-			<li>
-				<label class="post_type_lable" for="<?php echo esc_attr( $inserted_term['term_id'] ); ?>">
-				<input 
-					name="emp_arabic_tags[]" 
-					type="checkbox"
-					id="<?php echo esc_attr( $inserted_term['term_id'] ); ?>"
-					value="<?php echo esc_attr( $inserted_term['term_id'] ); ?>"
-					checked
-				>
-					<?php echo esc_html( $term_name->name ); ?>
 				</label>
 			</li>
 			<?php
@@ -1246,6 +1290,7 @@ class Events_Main_Plugin_Admin {
 	 *
 	 * @param $title
 	 * @param $post
+	 * 
 	 * @return string
 	 */
 	public function dff_event_title_place_holder( $title, $post ) {
@@ -1277,9 +1322,7 @@ class Events_Main_Plugin_Admin {
 
 		unset(
 			$columns['taxonomy-events_categories'],
-			$columns['taxonomy-events_arabic_categories'],
 			$columns['taxonomy-events_tags'],
-			$columns['taxonomy-events_arabic_tags']
 		);
 
 		return $columns;
@@ -1811,7 +1854,6 @@ class Events_Main_Plugin_Admin {
 		}
 
 		return $settings;
-
 	}
 
 	/**
@@ -1852,6 +1894,9 @@ class Events_Main_Plugin_Admin {
 		wp_set_post_terms( $postID, $emp_category, 'events_categories', false );
 		wp_set_post_terms( $postID, $emp_tags, 'events_tags', false );
 
+		// backwards compatibility aroun system
+		backwards_compatibility_events( $postID );
+
 		die();
 
 	}
@@ -1864,12 +1909,9 @@ class Events_Main_Plugin_Admin {
 
 		$post_id = filter_input( INPUT_POST, 'post_id', FILTER_SANITIZE_NUMBER_INT );
 		$post_id = isset( $post_id ) ? $post_id : '';
-		// delete_post_meta( $post_id, 'event_email_history' );
+
 		$site_id = filter_input( INPUT_POST, 'site_id', FILTER_SANITIZE_NUMBER_INT );
 		$site_id = isset( $site_id ) ? $site_id : '';
-
-		// $site_language = filter_input( INPUT_POST, 'site_language', FILTER_SANITIZE_NUMBER_INT );
-		// $site_language = isset( $site_language ) ? $site_language : '';
 
 		$dffmain_event_special_mail_data = isset( $_POST['dffmain_event_special_mail_data'] ) ? $_POST['dffmain_event_special_mail_data'] : [];
 		$dffmain_event_content = [];
@@ -1879,19 +1921,7 @@ class Events_Main_Plugin_Admin {
 			$dffmain_event_subject[$value['language']] = $value['subject'];
 		}
 
-
-		// echo ("<pre>");
-		// // var_dump($dffmain_event_special_mail_data);
-		// print_r($dffmain_event_subject);
-		// echo ("</pre>");
-		// wp_die();
-
-
-		// $dffmain_event_content = isset( $_POST['dffmain_event_content'] ) ? $_POST['dffmain_event_content'] : [];
-
-		// $dffmain_event_subject = isset( $_POST['dffmain_event_subject'] ) ? $_POST['dffmain_event_subject'] : [];
-
-		$settings_array_get          = get_option( 'events_general_settings' );
+		$settings_array_get          = main_site_get_option( 'events_general_settings' );
 		$events_general_settings_get = json_decode( $settings_array_get );
 		$events_general_settings_get = (array) $events_general_settings_get;
 		$sendgrid_apikey      = $events_general_settings_get['send_grid_key'];
@@ -2077,87 +2107,6 @@ class Events_Main_Plugin_Admin {
 				add_post_meta( $post_id, 'event_email_history', $response_data );
 			}/**foreach ( $query_attendees->posts as $query_attendees_data ) { */
 		}/**if ( isset( $query_attendees->posts ) && ! empty( $query_attendees->posts ) ) { */
-wp_die();
-		/**
-		 * mail sent for attendee
-		 */
-		// $template_id = 'd-e0a56b842d0541b0b34be68709f8798c'; /** TODO !!! Hardcodded ID */
-
-		// if ( isset( $dffmain_event_subject ) 
-		// 	&& ! empty( $dffmain_event_subject ) 
-		// 	&& isset( $dffmain_event_content ) 
-		// 	&& ! empty( $dffmain_event_content ) ) {
-
-		// 	foreach( $dffmain_attendee_data['Email'] as $k => $v ) {
-
-		// 		$dffmain_event_subject = str_replace( '{{date/time}}', $dffmain_attendee_data['date_output'][$k], $dffmain_event_subject );
-		// 		$dffmain_event_subject = str_replace( '{{e_attendee_fname}}', $dffmain_attendee_data['e_attendee_fname'][$k], $dffmain_event_subject );
-		// 		$dffmain_event_subject = str_replace( '{{e_attendee_lname}}', $dffmain_attendee_data['e_attendee_lname'][$k], $dffmain_event_subject );
-		// 		$dffmain_event_subject = str_replace( '{{e_eventname}}', $dffmain_attendee_data['event_name'][$k], $dffmain_event_subject );
-		// 		$dffmain_event_subject = str_replace( '{{date}}', $dffmain_attendee_data['date'][$k], $dffmain_event_subject );
-		// 		$dffmain_event_subject = str_replace( '{{location}}', $dffmain_attendee_data['location'][$k], $dffmain_event_subject );
-		// 		$dffmain_event_subject = str_replace( '{{time}}', $dffmain_attendee_data['time_frame'][$k], $dffmain_event_subject );
-		// 		$dffmain_event_subject = str_replace("&#039;", "'", $dffmain_event_subject);
-
-		// 		$dffmain_event_content = str_replace( '{{date/time}}', $dffmain_attendee_data['date_output'][$k], $dffmain_event_content );
-		// 		$dffmain_event_content = str_replace( '{{e_attendee_fname}}', $dffmain_attendee_data['e_attendee_fname'][$k], $dffmain_event_content );
-		// 		$dffmain_event_content = str_replace( '{{e_attendee_lname}}', $dffmain_attendee_data['e_attendee_lname'][$k], $dffmain_event_content );
-		// 		$dffmain_event_content = str_replace( '{{e_eventname}}', $dffmain_attendee_data['event_name'][$k], $dffmain_event_content );
-		// 		$dffmain_event_content = str_replace( '{{date}}', $dffmain_attendee_data['date'][$k], $dffmain_event_content );
-		// 		$dffmain_event_content = str_replace( '{{location}}', $dffmain_attendee_data['location'][$k], $dffmain_event_content );
-		// 		$dffmain_event_content = str_replace( '{{time}}', $dffmain_attendee_data['time_frame'][$k], $dffmain_event_content );
-
-		// 		$dffmain_event_content = str_replace("&#039;", "'", $dffmain_event_content);
-
-		// 		$json_string_eng = (object) array(
-		// 			'from' => array( 'email' => 'no-reply@dubaifuture.ae' ),
-		// 			'personalizations' => array( 
-		// 				array(
-		// 					'to' => array( array( 'email' => $v ) ),
-		// 					'dynamic_template_data' => array(
-		// 						'EMAIL_SUBJECT' => $dffmain_event_subject,
-		// 						'EMAIL_CONTENT' => $dffmain_event_content,
-		// 						'DISPLAY_NAME' => $dffmain_attendee_data['e_attendee_fname'][$k],
-		// 						'HELLO' => 'Hello',
-		// 					),
-		// 				)
-		// 			),
-		// 			'template_id' => $template_id,
-		// 		);
-
-				
-			
-		// 		$request      = $url . 'v3/mail/send';
-		// 		$response = wp_remote_post(
-		// 			$request, array(
-		// 				'method'  => 'POST',
-		// 				'headers' => array( 'Authorization' => 'Bearer ' . $sendgrid_apikey, 'Content-Type' => 'application/json' ),
-		// 				'body'    => wp_json_encode( $json_string_eng ),
-		// 			)
-		// 		);
-
-					
-		// 		$dffmain_event_subject = str_replace( $dffmain_attendee_data['e_attendee_fname'][$k], '{{e_attendee_fname}}', $dffmain_event_subject );
-		// 		$dffmain_event_subject = str_replace( $dffmain_attendee_data['e_attendee_lname'][$k], '{{e_attendee_lname}}', $dffmain_event_subject );
-
-		// 		$dffmain_event_content = str_replace( $dffmain_attendee_data['e_attendee_fname'][$k], '{{e_attendee_fname}}', $dffmain_event_content );
-		// 		$dffmain_event_content = str_replace( $dffmain_attendee_data['e_attendee_lname'][$k], '{{e_attendee_lname}}', $dffmain_event_content );
-
-		// 	}
-
-		// 	if ( 200 === $response['response']['code'] ) {
-		// 		$response_data['english_response'] = 'Sent';
-		// 	} else {
-		// 		$response_data['english_response'] = 'Fail';
-		// 	}
-
-		// 	$response_data['dffmain_email_subject'] = $dffmain_event_subject;
-		// 	$response_data['dffmain_email_content'] = $dffmain_event_content;
-		// }
-
-		// $response_data['email_date'] = date( 'd-M-Y | h:i:s' );
-		// add_post_meta( $post_id, 'event_email_history', $response_data );
-
 		?>
 		<table id="email_history" class="display nowrap" style="width:100%">
 			<thead>
@@ -2180,7 +2129,7 @@ wp_die();
 					<tr>
 						<td><?php echo esc_html( $count ); ?></td>
 						<td><?php echo esc_html( $event_email_history_data['email_date'] ); ?></td>
-						<td><?php echo ! empty( $event_email_history_data['dffmain_email_subject'] ) ? esc_html( $event_email_history_data['dffmain_email_subject'] ) : esc_html( $event_email_history_data['arabic_subject'] ); ?></td>
+						<td><?php echo ! empty( $event_email_history_data['dffmain_email_subject'] ) ? esc_html( $event_email_history_data['dffmain_email_subject'] ) : 'arqqq'; ?></td>
 						<td>
 							<span class="view_history_action">View</span>
 							<div class="email_history_popup">
@@ -2203,32 +2152,9 @@ wp_die();
 										</div>
 										<?php
 									}
-
-									if ( ! empty( $event_email_history_data['arabic_subject'] ) ) {
 									?>
-									<div class="accordian-main">
-										<div class="accordian-title">
-											<h3>Arabic Email</h3>
-										</div>
-										<div class="accordian-body"
-											 style="unicode-bidi: bidi-override !important;direction: rtl !important;text-align:right;">
-											<hr>
-											<div>
-												<h4>
-													Subject: <?php echo esc_html( $event_email_history_data['arabic_subject'] ); ?></h4>
-												<h3>Content</h3>
-												<hr>
-												<div style="word-wrap: break-word;">
-													<?php echo wp_kses_post( $event_email_history_data['arabic_content'] ); ?>
-												</div>
-											</div>
-										</div>
-										<?php
-									}
-										?>
-
-									</div>
 								</div>
+							</div>
 						</td>
 					</tr>
 					<?php
@@ -2246,22 +2172,23 @@ wp_die();
 
 
 	/**
-	 * Cron function for send email reminder email.
+	 * Cron function for send email reminder email. TODO -- do we need it?
 	 */
 	public static function cron_event_reminder() {
 
 		$current_date                = date( 'Y-m-d' );
-		$settings_array_get          = get_option( 'events_general_settings' );
+		$settings_array_get          = main_site_get_option( 'events_general_settings' );
 		$events_general_settings_get = json_decode( $settings_array_get );
 		$events_general_settings_get = (array) $events_general_settings_get;
 		$send_grid_from_email        = $events_general_settings_get['send_grid_from_email'];
 		$send_grid_from_name         = $events_general_settings_get['send_grid_from_name'];
 
-		$events_content_event_reminder = get_option( 'events_content_event_reminder' );
-		$events_arabic_event_reminder  = get_option( 'events_arabic_event_reminder' );
-		$subject_event_reminder        = get_option( 'subject_event_reminder' );
-		$arabic_event_reminder         = get_option( 'arabic_event_reminder' );
-		$url                           = 'https://api.sendgrid.com/';
+		$events_content_event_reminder = main_site_get_option( 'events_content_event_reminder' )['English'];
+		$events_arabic_event_reminder  = main_site_get_option( 'events_content_event_reminder' )['Arabic'];
+		$subject_event_reminder        = main_site_get_option( 'subject_event_reminder' )['English'];
+		$arabic_event_reminder         = main_site_get_option( 'subject_event_reminder' )['Arabic'];
+
+		$url = 'https://api.sendgrid.com/';
 
 		/**
 		 * Fetch event details of today's date.
@@ -2284,18 +2211,14 @@ wp_die();
 			foreach ( $dff_events_record->posts as $dff_events_record_ids ) {
 
 				$dffmain_post_title      = get_post_meta( $dff_events_record_ids, 'dffmain_post_title', true );
-				$arabic_post_title       = get_post_meta( $dff_events_record_ids, 'arabic_post_title', true );
 				$event_date              = get_post_meta( $dff_events_record_ids, 'event_date_select', true );
 				$event_end_date          = get_post_meta( $dff_events_record_ids, 'event_end_date_select', true );
 				$event_time_start_select = get_post_meta( $dff_events_record_ids, 'event_time_start_select', true );
 				$event_time_end_select   = get_post_meta( $dff_events_record_ids, 'event_time_end_select', true );
 				$dffmain_event_location  = get_post_meta( $dff_events_record_ids, 'dffmain_event_location', true );
-				$arabic_event_location   = get_post_meta( $dff_events_record_ids, 'arabic_event_location', true );
 
 				$events_overview         = get_post_meta( $dff_events_record_ids, 'events_overview', true );
-				$events_arabic_overview  = get_post_meta( $dff_events_record_ids, 'events_arabic_overview', true );
 				$dffmain_events_agenda   = get_post_meta( $dff_events_record_ids, 'dffmain_events_agenda', true );
-				$events_arabic_agenda    = get_post_meta( $dff_events_record_ids, 'events_arabic_agenda', true );
 
 				$sendgrid_apikey = $events_general_settings_get['send_grid_key'];
 
@@ -2337,7 +2260,6 @@ wp_die();
 					foreach ( $query_attendees->posts as $query_attendees_data ) {
 						$attendee_data = get_post_meta( $query_attendees_data, 'attendee_data', true );
 
-						/**TODO languge */
 						if ( 'en' === $attendee_data['languageType'] ) {
 
 							$event_date_en = str_replace( ' - ', ' to ', $event_date );
@@ -2364,12 +2286,13 @@ wp_die();
 							$arabic_attendee_data['a_attendee_fname'][] = $attendee_data['FirstName'];
 							$arabic_attendee_data['a_attendee_lname'][] = $attendee_data['LastName'];
 							$arabic_attendee_data['Email'][]            = $attendee_data['Email'];
-							$arabic_attendee_data['event_name'][]       = $arabic_post_title;
+							$arabic_attendee_data['event_name'][]       = $dffmain_post_title;
 							$arabic_attendee_data['date'][]             = $event_date_ar;
 							$arabic_attendee_data['time_frame'][]       = $event_time_start_select . ' إلى ' . $event_time_end_select;
-							$arabic_attendee_data['location'][]         = $arabic_event_location;
-							$arabic_attendee_data['a_event_detail'][]   = $events_arabic_overview . '<br><br>' . $events_arabic_agenda;
-							$event_details_ar                               = $events_arabic_overview . '<br><br>' . $events_arabic_agenda;
+							$arabic_attendee_data['location'][]         = $dffmain_event_location;
+							$arabic_attendee_data['a_event_detail'][]   = $events_overview . '<br><br>' . $dffmain_events_agenda;
+
+							$event_details_ar = $events_overview . '<br><br>' . $dffmain_events_agenda;
 
 							if( isset( $event_end_date ) && !empty( $event_end_date ) ) {
 								$arabic_attendee_data['date_output'][] = '{{date}}';
@@ -2384,7 +2307,7 @@ wp_die();
 				/**
 				 * mail sent for english attendee
 				 */
-				$template_id = 'd-e0a56b842d0541b0b34be68709f8798c';
+				$template_id = 'd-e0a56b842d0541b0b34be68709f8798c'; /**TODO hardcode! */
 				if ( isset( $dffmain_attendee_data['Email'] ) && ! empty( $dffmain_attendee_data['Email'] ) ) {
 
 					

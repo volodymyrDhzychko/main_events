@@ -87,12 +87,6 @@ function register_attendee( $request ) {
 	// Check if event exists.
 	$status = get_post_status( $event_id, '', '', 'attendees' ); /** TODO only 1 param!!! */
 
-	/** TODO choose language rot title 
-	 * 
-	 * 	$language_type        = $parameters['language_type'];
-	 *  $language_type        = isset( $language_type ) ? $language_type : '';
-	 *  $title_meta_key       = 'ar' === $language_type ? 'arabic_post_title' : 'dffmain_post_title';
-	*/
 	$title_meta_key = 'dffmain_post_title';
 
 	$_POST['event_title'] = get_post_meta( $event_id, $title_meta_key, true );
@@ -187,6 +181,7 @@ function register_attendee( $request ) {
 
 		$html = '';
 
+		/**TODO - correct file needed */
 		require get_template_directory() . '/templates/thank-you.php';
 
 		if ( 'success' === $html ) {

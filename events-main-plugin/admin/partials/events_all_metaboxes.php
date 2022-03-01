@@ -439,13 +439,26 @@ function event_cost_function() {
 	?>
 	<label for="free">
 		<span class="screen-reader-text">event_cost_name_free</span>
-		<label for="free"><input type="radio" name="event_cost_name" id="free"
-								value="Free" <?php checked( $event_cost_name, 'Free' ); ?> >Free</label>
+		<input 
+			type="radio" 
+			name="event_cost_name" 
+			id="free"
+			value="Free" 
+			<?php checked( $event_cost_name, 'Free' ); ?> 
+		>
+		Free
+	</label>
 	</label>
 	<label for="paid">
 		<span class="screen-reader-text">event_cost_name_paid</span>
-	<label for="paid" class="event_cost_right_radio"><input type="radio" name="event_cost_name" id="paid"
-							 value="Paid" <?php checked( $event_cost_name, 'Paid' ); ?> >Paid</label>
+		<input 
+			type="radio" 
+			name="event_cost_name" 
+			id="paid"
+			value="Paid" 
+			<?php checked( $event_cost_name, 'Paid' ); ?>
+		>
+		Paid
 	</label>
 	<?php
 

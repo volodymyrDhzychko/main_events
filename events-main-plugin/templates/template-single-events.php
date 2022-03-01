@@ -6,16 +6,7 @@ global $post;
 get_header();
 the_post();
 
-$current_is_rtl = false;
-$translations = dffmain_mlp_get_translations();
-foreach ($translations as $translation) {
-
-	$language = $translation->language();
-	$remote_site_id = $translation->remoteSiteId();
-	if ( get_current_blog_id() == $remote_site_id ) {
-		$current_is_rtl = $language->isRtl();
-	}
-}
+$current_is_rtl = dffmain_mlp_check_if_is_rtl();
 
 $server_https     = filter_input( INPUT_SERVER, 'HTTPS', FILTER_SANITIZE_STRING );
 $server_http_host = filter_input( INPUT_SERVER, 'HTTP_HOST', FILTER_SANITIZE_STRING );
@@ -37,7 +28,7 @@ $checkin = filter_input( INPUT_GET, 'checkin', FILTER_SANITIZE_STRING );
 $checkin = isset( $checkin ) ? $checkin : 'false';
 
 
-$settings_array_get          = get_option( 'events_general_settings' );
+$settings_array_get          = main_site_get_option( 'events_general_settings' );
 $events_general_settings_get = json_decode( $settings_array_get );
 $events_general_settings_get = (array) $events_general_settings_get;
 
@@ -180,7 +171,7 @@ if ( isset( $language ) && ! empty( $language ) ) {
 	$field_html = '';
 	if ( ! empty( $registration_form_data ) && isset( $registration_form_data ) ) {
 		foreach ( $registration_form_data as $key => $item ) {
-			/** TODO language! */
+
 			if ( !$current_is_rtl ) {
 				$field_arr  = $item['en'];
 				$class_name = ' en-field';
@@ -456,20 +447,24 @@ if ( isset( $language ) && ! empty( $language ) ) {
 			<div class="admin-front-register-page <?php echo esc_attr( $wrap_class ); ?>">
 				<div class="container">
 					<div class="row">
-
-						<?php if ( $current_is_rtl ) { ?>
-
+						<?php 
+						if ( $current_is_rtl ) { 
+							?>
 							<div class="col col-right">
 								<div class="event-placeholder-image event-placeholder-ar-align">
 									<img src="<?php echo get_the_post_thumbnail_url( $event_id, 'thumbnail' ); ?>" alt="event-placeholder-image">
 								</div>
 								<div class="sidebar">
 									<div class="sidebar-title">
-										<h3><?php echo esc_html( $event_details_heading ); ?></h3>
+										<h3>
+											<?php echo esc_html( $event_details_heading ); ?>
+										</h3>
 									</div>
 									<div class="data-item-main date-panel">
 										<div class="data-item-content">
-											<h4><?php echo esc_html( $date ); ?></h4>
+											<h4>
+												<?php echo esc_html( $date ); ?>
+											</h4>
 											<p>
 												<?php echo esc_html( $event_date ); ?><?php if( isset( $event_end_date ) && !empty( $event_end_date ) ) { echo " - ". esc_html( $event_end_date ); } ?>
 											</p>
@@ -479,7 +474,9 @@ if ( isset( $language ) && ! empty( $language ) ) {
 									if( empty( $event_end_date ) ) { ?>
 										<div class="data-item-main time-panel">
 											<div class="data-item-content">
-												<h4><?php echo esc_html( $time ); ?></h4>
+												<h4>
+													<?php echo esc_html( $time ); ?>
+												</h4>
 												<?php
 												$event_start_time = new DateTime( "$event_start_time" );
 												$event_end_time   = new DateTime( "$event_end_time" );
@@ -489,14 +486,20 @@ if ( isset( $language ) && ! empty( $language ) ) {
 													$event_time_frame = str_replace( 'PM', 'مساءً', $event_time_frame );
 													?>
 													<p>
-														<?php echo esc_html( $event_time_frame ); ?></p>
-												<?php } else { ?>
+														<?php echo esc_html( $event_time_frame ); ?>
+													</p>
+													<?php 
+												} else { 
+													?>
 													<p>-</p>
-												<?Php } ?>
+													<?php 
+												} 
+												?>
 											</div>
 										</div>
-									<?php } ?>
-									<?php
+										<?php 
+									} 
+
 									if ( isset( $event_cost ) && ! empty( $event_cost ) ) {
 										?>
 											<div class="data-item-main cost-panel">
@@ -507,8 +510,7 @@ if ( isset( $language ) && ! empty( $language ) ) {
 											</div>	
 										<?php
 									}
-									?>
-									<?php
+
 									if ( isset( $event_location ) && ! empty( $event_location ) ) {
 										?>
 										<div class="data-item-main location-panel">
@@ -516,15 +518,23 @@ if ( isset( $language ) && ! empty( $language ) ) {
 												<h4>
 													<?php echo esc_html( $location ); ?>
 												</h4>													
-												<?php if ( ! empty( $event_google_map_link ) ) { ?>
+												<?php 
+												if ( ! empty( $event_google_map_link ) ) { 
+													?>
 													<p>
 														<a aria-label="event_google_map_link" href="<?php echo esc_url( $event_google_map_link ); ?>"target="_blank">
 															<?php echo esc_html( $event_location ); ?>
 														</a>
 													</p>
-												<?php } else { ?>
-													<p><?php echo esc_html( $event_location ); ?></p>
-												<?php } ?>
+													<?php 
+												} else { 
+													?>
+													<p>
+														<?php echo esc_html( $event_location ); ?>
+													</p>
+													<?php 
+												} 
+												?>
 											</div>
 										</div>
 										<?php
@@ -539,36 +549,37 @@ if ( isset( $language ) && ! empty( $language ) ) {
 													</h4>
 													<?php 
 													$category_name_array = explode( ",", $category_name );
-													
+													$single_cat_link = [];
 													foreach( $category_name_array as $category_name_array_value ) {
-														$test[] = '<a href="https://www.dubaifuture.ae/events/?filter='.strtolower( str_replace(" ","-",$category_name_array_value) ).'"> '.$category_name_array_value.'</a>';
+														$single_cat_link[] = '<a href="https://www.dubaifuture.ae/events/?filter='.strtolower( str_replace(" ","-",$category_name_array_value) ).'"> '.$category_name_array_value.'</a>';
 													}
 													?>
 													<p>
-														<?php echo implode( ", ", $test ); ?> 
+														<?php echo implode( ", ", $single_cat_link ); ?> 
 													</p>
 												</div>
 											</div>
 										<?php
 									}
-									?>
-									<?php
+
 									if ( isset( $event_attendee_limit_count ) && ! empty( $event_attendee_limit_count ) ) {
 										?>
-											<div class="data-item-main attendee-count-panel">
-												<div class="data-item-content">
-													<h4><?php echo esc_html( $remaining_attendee ); ?></h4>
-													<p>
-														<?php
-														if ( 0 === $remaining_attendee_count ) {
-															echo '0';
-														} else {
-															echo esc_html( $remaining_attendee_count ); 
-														}
-														?>
-													</p>
-												</div>
+										<div class="data-item-main attendee-count-panel">
+											<div class="data-item-content">
+												<h4>
+													<?php echo esc_html( $remaining_attendee ); ?>
+												</h4>
+												<p>
+													<?php
+													if ( 0 === $remaining_attendee_count ) {
+														echo '0';
+													} else {
+														echo esc_html( $remaining_attendee_count ); 
+													}
+													?>
+												</p>
 											</div>
+										</div>
 										<?php
 									}
 									?>
@@ -585,24 +596,29 @@ if ( isset( $language ) && ! empty( $language ) ) {
 												</svg>
 											</a>
 										</div>
-										<h1><?php echo esc_html( $event_title ); ?></h1>
+										<h1>
+											<?php echo esc_html( $event_title ); ?>
+										</h1>
 									</div>
 									<?php
 									$event_detail_img = get_post_meta( $event_id, 'event_detail_img', true );
 									$image_attributes = wp_get_attachment_image_src( $event_detail_img, 'full' );
-									$image_alt        = get_post_meta( $event_detail_img, '_wp_attachment_image_alt', true );
 									$image_title      = get_the_title( $event_detail_img );
+									$image_alt        = get_post_meta( $event_detail_img, '_wp_attachment_image_alt', true );
+									$image_alt_display = '';
+									if ( isset( $image_alt ) && ! empty( $image_alt ) ) {
+										$image_alt_display = $image_alt;
+									} else {
+										$image_alt_display = $image_title; 
+									}
+
 									if ( isset( $image_attributes ) && ! empty( $image_attributes ) ) {
 										?>
 										<img 
 											class="event_detail_image" 
 											src="<?php echo esc_url( $image_attributes[0] ); ?>"
-											alt="<?php
-											if ( isset( $image_alt ) && ! empty( $image_alt ) ) {
-												echo $image_alt;
-											} else {
-												echo $image_title; } ?>
-										">
+											alt="<?php echo $image_alt_display; ?>"
+										>
 									<?php
 									}
 									?>
@@ -649,7 +665,6 @@ if ( isset( $language ) && ! empty( $language ) ) {
 									</div>
 								</div>
 								<?php
-
 								$event_cancelled = get_post_status( $post->ID );
 								if( 'cancelled' === $event_cancelled ) { 
 									?>
@@ -658,7 +673,6 @@ if ( isset( $language ) && ! empty( $language ) ) {
 									</div>
 									<?php
 								} else {
-
 									if( 'true' === $checkin || ( (int) $remaining_attendee_count > 0 || empty( $event_attendee_limit_count ) ) && ( strtotime( $event_all_date ) >= strtotime( date( 'd F Y' ) ) ) ) {
 										if ( ! empty( $registration_form_data ) ) {
 											?>
@@ -675,9 +689,13 @@ if ( isset( $language ) && ! empty( $language ) ) {
 															//}
 														?>
 													</div>												
-													<form class="attendee-form" id="attendee-form"
-														action="<?php echo esc_url( get_template_directory_uri() . '/templates/thank-you.php' ); ?>"
-														method="post" enctype="multipart/form-data">
+													<form 
+														class="attendee-form" 
+														id="attendee-form"
+														action="<?php echo plugins_url( 'thank-you.php', __FILE__ ); ?>"
+														method="post" 
+														enctype="multipart/form-data"
+													>
 														<div class="registration-template">
 															<div class="form-field-wrapper">
 																<?php echo wp_kses( $field_html, $allowed_tags ); ?>
@@ -714,7 +732,9 @@ if ( isset( $language ) && ! empty( $language ) ) {
 								}
 								?>
 							</div>
-						<?php } else { ?>
+							<?php 
+						} else { 
+							?>
 							<div class="col col-left">
 								<div class="event-data-wrap">
 									<div class="event-title-wrp">
@@ -730,18 +750,22 @@ if ( isset( $language ) && ! empty( $language ) ) {
 									<?php
 									$event_detail_img = get_post_meta( $event_id, 'event_detail_img', true );
 									$image_attributes = wp_get_attachment_image_src( $event_detail_img, 'full' );
-									$image_alt        = get_post_meta( $event_detail_img, '_wp_attachment_image_alt', true );
 									$image_title      = get_the_title( $event_detail_img );
+									$image_alt        = get_post_meta( $event_detail_img, '_wp_attachment_image_alt', true );
+
+									$image_alt_display = '';
+									if ( isset( $image_alt ) && ! empty( $image_alt ) ) {
+										$image_alt_display = $image_alt;
+									} else {
+										$image_alt_display = $image_title; 
+									}
 									if ( isset( $image_attributes ) && ! empty( $image_attributes ) ) {
 										?>
-										<img class="event_detail_image" src="<?php echo esc_url( $image_attributes[0] ); ?>"
-											 alt="
-												<?php
-												if ( isset( $image_alt ) && ! empty( $image_alt ) ) {
-													echo $image_alt;
-												} else {
-													echo $image_title; 
-												} ?> ">
+										<img 
+											class="event_detail_image" 
+											src="<?php echo esc_url( $image_attributes[0] ); ?>"
+											alt="<?php echo $image_alt_display; ?>"
+										>
 										<?php
 									}
 									?>
@@ -750,14 +774,17 @@ if ( isset( $language ) && ! empty( $language ) ) {
 											<?php
 											if ( isset( $events_overview ) && ! empty( $events_overview ) ) {
 												?>
-													<div class="page-intro-content">
-														<h4><?php echo esc_html( $event_description ); ?></h4>
-														<p><?php echo wp_kses_post( wpautop( $events_overview ) ); ?></p>
-													</div>
-													<?php
+												<div class="page-intro-content">
+													<h4>
+														<?php echo esc_html( $event_description ); ?>
+													</h4>
+													<p>
+														<?php echo wp_kses_post( wpautop( $events_overview ) ); ?>
+													</p>
+												</div>
+												<?php
 											}
-											?>
-											<?php
+
 											if ( isset( $events_agenda ) && ! empty( $events_agenda ) ) {
 												?>
 													<div class="event-agenda">
@@ -770,7 +797,9 @@ if ( isset( $language ) && ! empty( $language ) ) {
 										</div>
 										<div class="col event-share-col">
 											<div class="article-shareInner">
-												<h4>SHARE</h4>
+												<h4>
+													SHARE
+												</h4>
 												<ul class="social-icons">
 													<li>
 														<a aria-label="facebook" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo esc_attr( $event_link ); ?>">
@@ -788,7 +817,6 @@ if ( isset( $language ) && ! empty( $language ) ) {
 									</div>
 								</div>
 								<?php
-
 								$event_cancelled = get_post_status( $post->ID );
 								if( 'cancelled' === $event_cancelled ) { 
 									?>
@@ -804,8 +832,11 @@ if ( isset( $language ) && ! empty( $language ) ) {
 											?>
 												<div class="admin-front-register-form">
 													<div class="event_registration_form_title_wrap">
-														<h4 id="event_registration_form"><?php echo esc_html( $registration_form ); ?></h4>
+														<h4 id="event_registration_form">
+															<?php echo esc_html( $registration_form ); ?>
+														</h4>
 														<?php 
+															/** TODO check in */
 															//if( 'true' !== $checkin ) {
 																?>
 																<!-- <div class="button-wrap">
@@ -815,24 +846,48 @@ if ( isset( $language ) && ! empty( $language ) ) {
 															//}
 														?>
 													</div>
-													<form class="attendee-form" id="attendee-form"
-														action="<?php echo esc_url( get_template_directory_uri() . '/templates/thank-you.php' ); ?>"
-														method="post" enctype="multipart/form-data">
+													<form 
+														class="attendee-form" 
+														id="attendee-form"
+														action="<?php echo plugins_url( 'thank-you.php', __FILE__ ); ?>"
+														method="post" 
+														enctype="multipart/form-data"
+													>
 														<div class="registration-template">
 															<div class="form-field-wrapper">
 																<?php echo wp_kses( $field_html, $allowed_tags ); ?>
 															</div>
 															<div class="hidden-fields">
-																<input type="hidden" class="event_title" name="event_title"
-																	value="<?php echo get_the_title( $event_id ); ?>">
-																<input type="hidden" class="event_id" name="event_id"
-																	value="<?php echo esc_attr( $event_id ); ?>">
-																<input type="hidden" class="language_type" name="language_type"
-																	value="<?php echo esc_attr( $language ); ?>">
-																<input type="hidden" class="scode" name="scode"
-																	value="<?php echo esc_attr( $event_security_code ); ?>">
-																<input type="hidden" class="checkin" name="checkin"
-																	value="<?php echo esc_attr( $checkin ); ?>">
+																<input 
+																	type="hidden" 
+																	class="event_title" 
+																	name="event_title"
+																	value="<?php echo get_the_title( $event_id ); ?>"
+																>
+																<input 
+																	type="hidden" 
+																	class="event_id" 
+																	name="event_id"
+																	value="<?php echo esc_attr( $event_id ); ?>"
+																>
+																<input 
+																	type="hidden" 
+																	class="language_type" 
+																	name="language_type"
+																	value="<?php echo esc_attr( $language ); ?>"
+																>
+																<input 
+																	type="hidden" 
+																	class="scode" 
+																	name="scode"
+																	value="<?php echo esc_attr( $event_security_code ); ?>"
+																>
+																<input 
+																	type="hidden" 
+																	class="checkin" 
+																	name="checkin"
+																	value="<?php echo esc_attr( $checkin ); ?>"
+																>
 															</div>
 															<br>
 															<div class="button-wrap">
@@ -844,17 +899,20 @@ if ( isset( $language ) && ! empty( $language ) ) {
 										<?php
 										}
 									} else {
-										$event_registration_close_message_en = get_post_meta( $post->ID, 'event_registration_close_message_en', true );
+										$event_registration_close_message = get_post_meta( $post->ID, 'event_registration_close_message', true );
 										?>
 										<div class="admin-front-register-form">
-											<h4 id="event_registration_form"><?php echo esc_html( $registration_form_close ); ?></h4>
-											<p><?php echo esc_html( $event_registration_close_message_en ); ?></p>
+											<h4 id="event_registration_form">
+												<?php echo esc_html( $registration_form_close ); ?>
+											</h4>
+											<p>
+												<?php echo esc_html( $event_registration_close_message ); ?>
+											</p>
 										</div>
 										<?php
 									} 
 
 								}
-
 								?>
 							</div>
 							<div class="col col-right">
@@ -863,95 +921,122 @@ if ( isset( $language ) && ! empty( $language ) ) {
 								</div>
 								<div class="sidebar">
 									<div class="sidebar-title">
-										<h3><?php echo esc_html( $event_details_heading ); ?></h3>
+										<h3>
+											<?php echo esc_html( $event_details_heading ); ?>
+										</h3>
 									</div>
 									<div class="data-item-main date-panel">
 										<div class="data-item-content">
-											<h4><?php echo esc_html( $date ); ?></h4>
-											<p><?php echo esc_html( $event_date ); ?><?php if( isset( $event_end_date ) && !empty( $event_end_date ) ) { echo " - ". esc_html( $event_end_date ); } ?></p>
+											<h4>
+												<?php echo esc_html( $date ); ?>
+											</h4>
+											<p>
+												<?php echo esc_html( $event_date ); ?><?php if( isset( $event_end_date ) && !empty( $event_end_date ) ) { echo " - " . esc_html( $event_end_date ); } ?>
+											</p>
 										</div>
 									</div>
-									
 									<?php 
 									if( empty( $event_end_date ) ) {
 										?>
-											<div class="data-item-main time-panel">
-												<div class="data-item-content">
-													<h4><?php echo esc_html( $time ); ?></h4>
+										<div class="data-item-main time-panel">
+											<div class="data-item-content">
+												<h4>
+													<?php echo esc_html( $time ); ?>
+												</h4>
+												<?php
+												$event_start_time = new DateTime( "$event_start_time" );
+												$event_end_time   = new DateTime( "$event_end_time" );
+												if ( ! empty( $event_start_time ) && ! empty( $event_end_time ) ) {
+												?>
+													<p>
+														<?php echo esc_html( $event_start_time->format( 'h:i A' ) ); ?> - <?php echo esc_html( $event_end_time->format( 'h:i A' ) ); ?>
+													</p>
 													<?php
-													$event_start_time = new DateTime( "$event_start_time" );
-													$event_end_time   = new DateTime( "$event_end_time" );
-													if ( ! empty( $event_start_time ) && ! empty( $event_end_time ) ) {
+												} else {
 													?>
-														<p><?php echo esc_html( $event_start_time->format( 'h:i A' ) ); ?>
-															- <?php echo esc_html( $event_end_time->format( 'h:i A' ) ); ?></p>
-															<?php
-													} else {
-														?>
-															<p>-</p>
-															<?php
-													}
-														?>
-												</div>
-											</div>	
+													<p>-</p>
+													<?php
+												}
+												?>
+											</div>
+										</div>	
 										<?php
 									}
-									?>
-									<?php
+
 									if ( isset( $event_cost ) && ! empty( $event_cost ) ) {
 										?>
-											<div class="data-item-main cost-panel">
-												<div class="data-item-content">
-													<h4><?php echo esc_html( $cost ); ?></h4>
-													<p><?php echo esc_html( $event_cost ); ?></p>
-												</div>
-											</div>	
+										<div class="data-item-main cost-panel">
+											<div class="data-item-content">
+												<h4>
+													<?php echo esc_html( $cost ); ?>
+												</h4>
+												<p>
+													<?php echo esc_html( $event_cost ); ?>
+												</p>
+											</div>
+										</div>	
 										<?php
 									}
-									?>
-									<?php
+
 									if ( isset( $event_location ) && ! empty( $event_location ) ) {
 										?>
-									<div class="data-item-main location-panel">
-										<div class="data-item-content">
-											<h4><?php echo esc_html( $location ); ?></h4>
-											<?php if ( ! empty( $event_google_map_link ) ) { ?>
-												<p><a aria-label="event_google_map_link" href="<?php echo esc_url( $event_google_map_link ); ?>"
-													  target="_blank"><?php echo esc_html( $event_location ); ?></a></p>
-											<?php } else { ?>
-												<p><?php echo esc_html( $event_location ); ?></p>
-											<?php } ?>
-										</div>
-									</div>
-									<?php
-									}
-											?>
-									<?php
-									if ( isset( $category_name ) && ! empty( $category_name ) ) {
-										?>
-											<div class="data-item-main categroy-panel">
-												<div class="data-item-content">
-													<h4><?php echo esc_html( $category ); ?></h4>
-													<?php 
-													$category_name_array = explode( ",", $category_name );
-													//print_r( $category_name_array );
-													foreach( $category_name_array as $category_name_array_value ) {
-														$test[] = '<a href="https://www.dubaifuture.ae/events/?filter='.strtolower( str_replace(" ","-",$category_name_array_value) ).'"> '.$category_name_array_value.'</a>';
-													}
-													?>
-													<p><?php echo implode( ", ", $test ); ?> </p>
-												</div>
+										<div class="data-item-main location-panel">
+											<div class="data-item-content">
+												<h4>
+													<?php echo esc_html( $location ); ?>
+												</h4>
+												<?php 
+												if ( ! empty( $event_google_map_link ) ) { 
+												?>
+													<p>
+														<a aria-label="event_google_map_link" href="<?php echo esc_url( $event_google_map_link ); ?>"target="_blank">
+															<?php echo esc_html( $event_location ); ?>
+														</a>
+													</p>
+												<?php 
+												} else { 
+												?>
+													<p>
+														<?php echo esc_html( $event_location ); ?>
+													</p>
+												<?php 
+												} 
+												?>
 											</div>
+										</div>
 										<?php
 									}
-									?>
-									<?php
+
+									if ( isset( $category_name ) && ! empty( $category_name ) ) {
+										?>
+										<div class="data-item-main categroy-panel">
+											<div class="data-item-content">
+												<h4>
+													<?php echo esc_html( $category ); ?>
+												</h4>
+												<?php 
+												$category_name_array = explode( ",", $category_name );
+												$single_cat_link = [];
+												foreach( $category_name_array as $category_name_array_value ) {
+													$single_cat_link[] = '<a href="https://www.dubaifuture.ae/events/?filter='.strtolower( str_replace(" ","-",$category_name_array_value) ).'"> '.$category_name_array_value.'</a>';
+												}
+												?>
+												<p>
+													<?php echo implode( ", ", $single_cat_link ); ?>
+												</p>
+											</div>
+										</div>
+										<?php
+									}
+
 									if ( isset( $event_attendee_limit_count ) && ! empty( $event_attendee_limit_count ) ) {
 										?>
-											<div class="data-item-main attendee-count-panel">
-												<div class="data-item-content">
-													<h4><?php echo esc_html( $remaining_attendee ); ?></h4>
-													<p>
+										<div class="data-item-main attendee-count-panel">
+											<div class="data-item-content">
+												<h4>
+													<?php echo esc_html( $remaining_attendee ); ?>
+												</h4>
+												<p>
 													<?php
 													if ( (int) $remaining_attendee_count <= 0 ) {
 														echo '0';
@@ -959,14 +1044,17 @@ if ( isset( $language ) && ! empty( $language ) ) {
 														echo esc_html( $remaining_attendee_count );
 													}
 													?>
-													</p>
-												</div>
+												</p>
 											</div>
+										</div>
 										<?php
 									}
 									?>
+								</div>
 							</div>
-						<?php } ?>
+							<?php 
+						} 
+						?>
 					</div>
 				</div>
 			</div>

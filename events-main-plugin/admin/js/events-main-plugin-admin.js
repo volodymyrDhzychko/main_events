@@ -144,69 +144,6 @@ jQuery(document).ready(function () {
         }
     });
 
-    // jQuery('.category-add-arabic-submit').click(function () {
-    //     var newevents_arabic_categories = jQuery('#newevents_arabic_categories').val();
-    //     var newevents_arabic_categories_parent = jQuery('#newevents_arabic_categories_parent').val();
-    //     var post_id = jQuery('.post_id').val();
-
-    //     if ('' !== newevents_arabic_categories) {
-    //         jQuery.ajax({
-    //             url: ajax_object.ajaxurl,
-    //             type: 'POST',
-    //             data: {
-    //                 action: 'category_add_arabic_submit',
-    //                 newevents_arabic_categories: newevents_arabic_categories,
-    //                 newevents_arabic_categories_parent: newevents_arabic_categories_parent,
-    //                 post_id: post_id,
-    //             },
-    //             success: function (data) {
-
-    //                 if ("-1" === newevents_arabic_categories_parent) {
-    //                     var eventsArabicCategoriesChecklist = document.getElementById("events_arabic_categorieschecklist");
-    //                     eventsArabicCategoriesChecklist.innerHTML += data;
-    //                 } else {
-    //                     var neweventsArabicCategoriesParentId = 'event_child_' + newevents_arabic_categories_parent;
-    //                     var neweventsArabicCategoriesParent = document.getElementById(neweventsArabicCategoriesParentId);
-    //                     neweventsArabicCategoriesParent.innerHTML += data;
-    //                 }
-    //                 jQuery('#newevents_arabic_categories').val('');
-    //                 jQuery('#newevents_arabic_categories_parent').val('-1');
-    //             }
-    //         });
-    //     }
-    // });
-
-    // jQuery('.tags-add-arabic-submit').click(function () {
-    //     var newevents_arabic_tags = jQuery('#newevents_arabic_tags').val();
-    //     var newevents_arabic_tags_parent = jQuery('#newevents_arabic_tags_parent').val();
-    //     var post_id = jQuery('.post_id').val();
-
-    //     if ('' !== newevents_arabic_tags) {
-    //         jQuery.ajax({
-    //             url: ajax_object.ajaxurl,
-    //             type: 'POST',
-    //             data: {
-    //                 action: 'tags_add_arabic_submit',
-    //                 newevents_arabic_tags: newevents_arabic_tags,
-    //                 newevents_arabic_tags_parent: newevents_arabic_tags_parent,
-    //                 post_id: post_id,
-    //             },
-    //             success: function (data) {
-    //                 if ("-1" === newevents_arabic_tags_parent) {
-    //                     var eventsArabicTagssChecklist = document.getElementById("events_arabic_tagsschecklist");
-    //                     eventsArabicTagssChecklist.innerHTML += data;
-    //                 } else {
-    //                     var neweventsArabicTagsParentId = 'event_child_' + newevents_arabic_tags_parent;
-    //                     var neweventsArabicTagsParent = document.getElementById(neweventsArabicTagsParentId);
-    //                     neweventsArabicTagsParent.innerHTML += data;
-    //                 }
-    //                 jQuery('#newevents_arabic_tags').val('');
-    //                 jQuery('#newevents_arabic_tags_parent').val('-1');
-    //             }
-    //         });
-    //     }
-    // });
-
     $('body').on('click', '.upload_event_detail_image_button', function (e) {
         e.preventDefault();
 
@@ -582,23 +519,6 @@ jQuery(document).ready(function () {
 
     });
 
-    // jQuery(document).on('mousemove', 'body', function () {
-
-    //     var dffmainEventSpecialEmailContentIds = jQuery("*[id^=event_send_special_email_]");
-
-    //     var dffmain_event_content = jQuery('#event_send_email_english_ifr').contents().find('#tinymce').html();
-
-    //     var dffmain_event_subject = jQuery(".dffmain_mail_subject").val();
-
-    //     if ('' !== dffmain_event_content && '' !== dffmain_event_subject) {
-    //         jQuery(".btn-send-email").prop("disabled", false);
-    //     } else if ('' !== dffmain_event_subject && '' !== dffmain_event_content && '<p><br data-mce-bogus="1"></p>' !== dffmain_event_content) {
-    //         jQuery(".btn-send-email").prop("disabled", false);
-    //     } else {
-    //         jQuery(".btn-send-email").prop("disabled", true);
-    //     }
-
-    // });
     hide_pagination();
 });
 

@@ -10,21 +10,6 @@
  * @subpackage Events_Main_Plugin/admin/partials
  */
 
- /**
- * Get url by site id & posd id
- *
- * @param $site_id
- * @param $post_id
- * 
- * @return $link url to post
- */
-// function get_url_from_site_id( $site_id, $post_id ) {
-//     switch_to_blog( $site_id );
-//         $link = get_permalink( $post_id );
-//     restore_current_blog();
-
-//     return $link;
-// }
 
  /**
   * Generic multilingualpress plugin function
@@ -46,61 +31,12 @@ function dffmain_mlp_get_translations() {
    return $translations;
 }
 
-function dffmain__translations() {
-
-    $current_site_id = get_current_blog_id();
-    $args = \Inpsyde\MultilingualPress\Framework\Api\TranslationSearchArgs::forContext(new \Inpsyde\MultilingualPress\Framework\WordpressContext())
-       ->forSiteId( get_current_blog_id() )
-       ->includeBase();
- 
-    $translations = \Inpsyde\MultilingualPress\resolve(
-       \Inpsyde\MultilingualPress\Framework\Api\Translations::class
-    )->searchTranslations($args);
-
-    $main_translation_site_id = [];
-
-    foreach ( $translations as $t ) {
-        $main_translation_site_id[$iter]['remoteSiteId'] = $t->remoteSiteId();
-        $main_translation_site_id[$iter]['sourceSiteId'] = $t->sourceSiteId();
-        
-
-    }
-
-    // $args = \Inpsyde\MultilingualPress\Framework\Api\TranslationSearchArgs::forContext(new \Inpsyde\MultilingualPress\Framework\WordpressContext())
-    //    ->forSiteId( $main_translation_site_id )
-    //    ->includeBase();
- 
-    // $all_translations = \Inpsyde\MultilingualPress\resolve(
-    //    \Inpsyde\MultilingualPress\Framework\Api\Translations::class
-    // )->searchTranslations($args);
-    
-
-    // $data_arr = [];
-    // $i = 0;
-    // foreach ($all_translations as $translation) {
-    //     $language = $translation->language();
-    //     $language_iso_name = $language->isoName();
-    //     $language_locale = $language->locale();
-    //     $url = $translation->remoteUrl();
-    //     $iterated_site_id = $translation->remoteSiteId();
-
-    //     // if (  $current_site_id != $iterated_site_id ) {
-    //         $data_arr[$i]['lung'] = $language_iso_name;
-    //         $data_arr[$i]['url'] = $url;
-    //         $i++;
-    //     // }
- 
-    //  }
- 
-    return $main_translation_site_id;
- }
-
 /**
  * Generic multilingualpress plugin function
  * 
  * sourse: https://multilingualpress.org/docs/get-connected-post-ids-current-post-id/
  * 
- * returns array [site_id -> post_id]
+ * @returns array [site_id -> post_id]
  */
 function multilingualpress_get_ids( $curr_post_id, $curr_site_id ) {
 
@@ -110,9 +46,30 @@ function multilingualpress_get_ids( $curr_post_id, $curr_site_id ) {
 }
 
 /**
+ * Checks if site has RTL direction. Uses multilingualpress plugin function.
+ * 
+ * @returns boolean 
+ */
+function dffmain_mlp_check_if_is_rtl() {
+
+    $translations = dffmain_mlp_get_translations();
+    $current_is_rtl = false;
+
+    foreach ($translations as $translation) {
+
+        $language = $translation->language();
+        $remote_site_id = $translation->remoteSiteId();
+        if ( get_current_blog_id() == $remote_site_id ) {
+            $current_is_rtl = $language->isRtl();
+        }
+    }
+    return $current_is_rtl;
+}
+
+/**
  * Get array of IDs connected translations
  * 
- * returns array [site_id => post_id]
+ * @returns [array] $site_id => $post_id
  */
 function get_translations_ids( $curr_post_id = 0, $curr_site_id = 0 ) {
     
@@ -133,9 +90,9 @@ function get_translations_ids( $curr_post_id = 0, $curr_site_id = 0 ) {
 /**
  * Get array of connected translations with languages
  * 
- * param site_id
+ * @param site_id
  * 
- * returns array 
+ * @returns array 
  * [ 
  * language_name, 
  * language_locale, 
@@ -194,11 +151,12 @@ function get_translations_data() {
 /**
  * Get converts locale (en_US) to full language name
  * 
- * param $locale
+ * @param $locale
+ * @param $get_code 
  * 
- * returns string - current language name OR locale if not found
+ * @returns string - current language name OR locale 2 signs code if not found
  */
-function convert_locale_to_full_name( $locale ) {
+function convert_locale_to_full_name( $locale, $get_code = false ) {
 
     $locale_short = substr( $locale, 0, 2 );
     $wp_locale_conversion = [
@@ -909,13 +867,19 @@ function convert_locale_to_full_name( $locale ) {
         )
     ];
     if ( isset( $wp_locale_conversion[$locale] ) ) {
+
         $language_name = $wp_locale_conversion[$locale]['name'];
-
+        if ( $get_code ) {
+            $language_name = $wp_locale_conversion[$locale]['code'];
+        }
     }elseif ( isset( $wp_locale_conversion[$locale_short] ) ) {
-        $language_name = $wp_locale_conversion[$locale_short]['name'];
 
+        $language_name = $wp_locale_conversion[$locale_short]['name'];
+        if ( $get_code ) {
+            $language_name = $wp_locale_conversion[$locale_short]['code'];
+        }
     }else{
-        $language_name = $locale;
+        $language_name = $locale_short;
     }
     
 
@@ -925,7 +889,7 @@ function convert_locale_to_full_name( $locale ) {
 /**
  * Get current site language name
  * 
- * returns string - current language name
+ * @returns string - current language name
  */
 function get_current_language_name() {
 
@@ -938,6 +902,12 @@ function get_current_language_name() {
 
 /**
  * get post meta based on site_id post_id meta_key
+ * 
+ * param $site_id
+ * param $post_id
+ * param $key
+ * 
+ * return post meta value
  * 
  */
 function multisite_post_meta( $site_id, $post_id, $key ){
@@ -953,6 +923,10 @@ function multisite_post_meta( $site_id, $post_id, $key ){
 /**
  * get site option based on site_id meta_key
  * 
+ * param $site_id
+ * param $key
+ * 
+ * return option value
  */
 function multisite_get_option( $site_id, $key ){
 	switch_to_blog( $site_id );
@@ -961,3 +935,151 @@ function multisite_get_option( $site_id, $key ){
 	return $val;
 }
 
+/**
+ * Get Main site option based on  meta_key
+ * 
+ * @param $key
+ * 
+ * @return option value
+ */
+function main_site_get_option( $key ){
+	switch_to_blog( get_main_site_id() );
+	$val = get_option( $key );
+	restore_current_blog();	
+	return $val;
+}
+
+/**
+ * Update site option based on site_id meta_key
+ * 
+ * @param $site_id
+ * @param $key
+ * @param $newvalue
+ * 
+ * @return boolean updated or not
+ */
+function multisite_update_option( $site_id, $key, $newvalue ){
+	switch_to_blog( $site_id );
+	$result = update_option( $key, $newvalue, false );
+	restore_current_blog();	
+	return $result;
+}
+
+/**
+ * Update Main site option 
+ * 
+ * @param $key
+ * @param $newvalue
+ * @param $autoload - optional
+ * 
+ * @return boolean - updated or not
+ */
+function main_site_update_option( $key, $newvalue, $autoload = false ){
+	switch_to_blog( get_main_site_id() );
+	$result = update_option( $key, $newvalue, $autoload );
+	restore_current_blog();	
+	return $result;
+}
+
+/**
+ * Update translation sites meta which is common to all
+ *
+ * @param [array] $translations
+ * @param [int] $source_site_id
+ * @param [int] $source_post_id
+ * @return void
+ */
+function update_common_meta_fields( $translations, $source_site_id, $source_post_id ){
+
+    if ( !is_array( $translations ) ) return;
+    if ( get_current_blog_id() != $source_site_id ) return;
+
+    // get data from source
+    // Cost settings
+    $event_cost_name = get_post_meta( $source_post_id, 'event_cost_name' );
+
+    // Reminder settings
+    $event_reminder_select_box = get_post_meta( $source_post_id, 'event_reminder_select_box' );
+
+    // Date settings
+    $event_date_select = get_post_meta( $source_post_id, 'event_date_select' );
+
+    // End date settings
+    $event_end_date_select = get_post_meta( $source_post_id, 'event_end_date_select' );
+
+    // Time settings
+    $event_time_start_select = get_post_meta( $source_post_id, 'event_time_start_select' );
+    $event_time_end_select = get_post_meta( $source_post_id, 'event_time_end_select' );
+
+    // Google map settings
+    $event_google_map_input = get_post_meta( $source_post_id, 'event_google_map_input' );
+
+    // Detail image
+    $event_detail_img = get_post_meta( $source_post_id, 'event_detail_img' );
+
+    // Security Code Setting
+    $security_code_checkbox = get_post_meta( $source_post_id, 'security_code_checkbox' );
+    $event_security_code = get_post_meta( $source_post_id, 'event_security_code' );
+
+    // Reminder date
+    $event_reminder_date = get_post_meta( $source_post_id, 'event_reminder_date' );
+
+    // Special instruction
+    $event_special_instruction = get_post_meta( $source_post_id, 'event_special_instruction' );
+
+    // Google maps embeded code
+    $google_embed_maps_code = get_post_meta( $source_post_id, 'google_embed_maps_code' );
+
+
+    // Attendee meta data
+    $event_attendee_limit_count = get_post_meta( $source_post_id, 'event_attendee_limit_count' );
+    $event_registration_close_messagez = get_post_meta( $source_post_id, 'event_registration_close_message' );
+
+
+    foreach ( $translations as $site_id => $post_id ) {
+
+        switch_to_blog( $site_id );
+
+            // Cost settings
+			update_post_meta( $post_id, 'event_cost_name', $event_cost_name );
+
+			// Reminder settings
+			update_post_meta( $post_id, 'event_reminder_select_box', $event_reminder_select_box );
+
+			// Date settings
+			update_post_meta( $post_id, 'event_date_select', $event_date_select );
+
+			// End date settings
+			update_post_meta( $post_id, 'event_end_date_select', $event_end_date_select );
+
+			// Time settings
+			update_post_meta( $post_id, 'event_time_start_select', $event_time_start_select );
+			update_post_meta( $post_id, 'event_time_end_select', $event_time_end_select );
+
+			// Google map settings
+			update_post_meta( $post_id, 'event_google_map_input', $event_google_map_input );
+
+			// Detail image
+			update_post_meta( $post_id, 'event_detail_img', sanitize_text_field( $meta_key ) );
+
+			// Security Code Setting
+			update_post_meta( $post_id, 'security_code_checkbox', $security_code_checkbox );
+			update_post_meta( $post_id, 'event_security_code', $event_security_code );
+
+			// Reminder date
+			update_post_meta( $post_id, 'event_reminder_date', $event_reminder_date );
+
+			// Special instruction
+			update_post_meta( $post_id, 'event_special_instruction', $event_special_instruction );
+
+			// Google maps embeded code
+			update_post_meta( $post_id, 'google_embed_maps_code', $google_embed_maps_code );
+
+
+			// Attendee meta data
+			update_post_meta( $post_id, 'event_attendee_limit_count', $event_attendee_limit_count );
+			update_post_meta( $post_id, 'event_registration_close_message', $event_registration_close_message );
+
+        restore_current_blog();
+    }
+}
