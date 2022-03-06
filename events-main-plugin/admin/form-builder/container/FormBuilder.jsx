@@ -88,6 +88,10 @@ class Main extends Component {
         };
     }
 
+    // TODO: Best practice to use some async request like fetch is using some decorator function with public interface and inside this decorator is using fetch requests
+    // https://www.telerik.com/blogs/decorators-in-javascript
+    // benefit of this approach - you can easy change way how you make request and public interface in this case will be the same
+
     componentDidMount() {
         if (null !== document.getElementById('registration_form')) {
             let body = document.body;
@@ -226,16 +230,23 @@ class Main extends Component {
         return (
             <div id="registration-template" className="registration-template">
                 <div className="button-wrap">
-                    <button className="button button-primary btn-save" onClick={this.handleSave}>Save</button>
+                    <button className="button button-primary btn-save"
+                            onClick={this.handleSave}>Save</button>
                 </div>
                 <div className="compulsory-field-main">
-                    {response &&
-                    <CompulsoryFields wpObject={window.formBuilderObj} registrationFormData={registrationFormData}/>}
+                    {
+                        response &&
+                        <CompulsoryFields wpObject={window.formBuilderObj}
+                                          registrationFormData={registrationFormData} />
+                    }
                 </div>
                 <div className="additional-field-main">
-                    {response &&
-                    <AdditionalFields wpObject={window.formBuilderObj} registrationFormData={registrationFormData}
-                                      allFieldsData={this.allFieldsData}/>}
+                    {
+                        response &&
+                        <AdditionalFields wpObject={window.formBuilderObj}
+                                          registrationFormData={registrationFormData}
+                                          allFieldsData={this.allFieldsData}/>
+                    }
                 </div>
             </div>
         );

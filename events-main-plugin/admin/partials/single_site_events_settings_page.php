@@ -3,6 +3,24 @@
  * Save settings fields options.
  */
 $locale_submit_settings = filter_input( INPUT_POST, 'locale_submit_settings', FILTER_SANITIZE_STRING );
+
+// TODO: below should be implemented idea with single checking function
+// I added before example of this function getFieldValue
+
+// Check field and return its value or return null
+/*function getFieldValue($dataArr, $key)
+{
+	return (isset($dataArr[$key])) ? $dataArr[$key] : null;
+}
+
+function is_var_empty($variable){
+    return isset( $variable ) ? $variable : '';
+}
+
+*/
+
+
+
 if ( isset( $locale_submit_settings ) ) {
 
     $local_site_key = filter_input( INPUT_POST, 'local_site_key', FILTER_SANITIZE_STRING );
@@ -57,6 +75,9 @@ if ( isset( $locale_submit_settings ) ) {
     $local_settings_array['local_site_key'] = $local_site_key;
     $local_settings_array['local_secret_key'] = $local_secret_key;
 
+    // TODO: above you create temporary variables but iа you will use "is_var_empty"
+    // you can remove a lot of line of code
+
     $local_settings_array['local_overview'] = $local_overview;
 	$local_settings_array['local_agenda'] = $local_agenda;
 	$local_settings_array['local_registration_form'] = $local_registration_form;
@@ -85,7 +106,10 @@ $locale_events_general_settings_get = (array) $locale_events_general_settings_ge
 		Events Settings
 	</h1>
 	<div class="event_general_section">
+        <?php
+        // TODO: Below copy-paste.. Code should be optimized
 
+        ?>
         <div id="config">
             <form action="edit.php?post_type=dffmain-events&page=diffmain-events-settings-page" method="post">
 

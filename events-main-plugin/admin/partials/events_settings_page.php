@@ -7,6 +7,10 @@ $translations = dffmain_mlp_get_translations();
 /**
  * Save settings fields options.
  */
+
+// TODO: You have several times use the same check like " isset( $send_grid_key ) ? $send_grid_key : ''; "
+// Better way is creating special function foe check and use it.. Code will be more simple and nice
+
 $submit_settings = filter_input( INPUT_POST, 'submit_settings', FILTER_SANITIZE_STRING );
 if ( isset( $submit_settings ) ) {
 	$send_grid_key = filter_input( INPUT_POST, 'send_grid_key', FILTER_SANITIZE_STRING );
@@ -51,12 +55,15 @@ if ( isset( $submit_settings ) ) {
  */
 $submit = filter_input( INPUT_POST, 'submit', FILTER_SANITIZE_STRING );
 
+// TODO: Right way is check variable before using it if foreach .. YOu can get fatal error in some cases
 foreach ( $translations as $translation ) {
 	$language      = $translation->language();
 	$language_name = $language->isoName();
 	$is_rtl        = $language->isRtl();
 
 	if ( isset( $submit ) ) {
+
+	    // TODO: the same idea for checking function as described above
 
 		$events_content_thank_you_after_registration = 'events_content_thank_you_after_registration_' . $language_name;
 		$$events_content_thank_you_after_registration = isset( $_POST['events_content_thank_you_after_registration_' . $language_name] ) ? wp_kses_post( $_POST['events_content_thank_you_after_registration_' . $language_name] ) : '';
@@ -373,6 +380,7 @@ foreach ( $translations as $translation ) {
 				novalidate="novalidate"
 			>
 				<?php
+				// TODO: Right way is check variable before using it if foreach .. YOu can get fatal error in some cases
 				foreach ($translations as $translation) {
 					$language        = $translation->language();
 					$language_name   = $language->isoName();
@@ -534,7 +542,7 @@ foreach ( $translations as $translation ) {
 						<input type="submit" name="submit" class="button button-primary" value="Save Changes">
 					</div>
 					<?php
-				}/**foreach ($translations as $translation) { */
+				} // foreach ($translations as $translation) {
 				?>
 			</form>
 		</div>

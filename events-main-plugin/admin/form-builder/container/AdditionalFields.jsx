@@ -10,7 +10,7 @@ class AdditionalFields extends Component {
         this.state = {
             modalPopup: false,
             registrationFormData: this.props.registrationFormData,
-            addtionalFieldsObj: [],
+            additionalFieldsObj: [],
             compulsoryFieldsObj: [],
             editFieldData: [],
             editModalField: false,
@@ -21,21 +21,22 @@ class AdditionalFields extends Component {
 
     componentDidMount() {
         if (null !== document.getElementById('additional-fields-wrap')) {
-            let addtionalFieldsObj = [];
+            let additionalFieldsObj = [];
             let compulsoryFieldsObj = [];
             let i = 0;
-            3 < this.state.registrationFormData.length &&
+
+            (3 < this.state.registrationFormData.length) &&
             this.state.registrationFormData.map((item, index) => {
                 if (2 < index) {
                     if (null !== item) {
-                        addtionalFieldsObj.push(item);
+                        additionalFieldsObj.push(item);
                     }
-
-                } else {
-                    compulsoryFieldsObj.push(item);
+                    return false;
                 }
+                compulsoryFieldsObj.push(item);
             });
-            this.setState({addtionalFieldsObj, compulsoryFieldsObj});
+
+            this.setState({additionalFieldsObj, compulsoryFieldsObj});
         }
     }
 
@@ -47,27 +48,33 @@ class AdditionalFields extends Component {
         this.setState({modalPopup: false});
     };
     handleAddField = (newFieldObj) => {
-        let addtionalFieldsObj = this.state.addtionalFieldsObj;
+        let additionalFieldsObj  = this.state.additionalFieldsObj;
         let registrationFormData = this.state.registrationFormData;
-        addtionalFieldsObj.push(newFieldObj);
+
+        additionalFieldsObj.push(newFieldObj);
         registrationFormData.push(newFieldObj);
+
         this.props.allFieldsData(registrationFormData);
+
         this.setState({
-            addtionalFieldsObj: addtionalFieldsObj,
+            additionalFieldsObj: additionalFieldsObj,
             registrationFormData: registrationFormData,
             modalPopup: false
         });
 
     };
     handleEditedFieldData = (newFieldObj) => {
-        let addtionalFieldsObj = this.state.addtionalFieldsObj;
+        let additionalFieldsObj  = this.state.additionalFieldsObj;
         let registrationFormData = this.state.registrationFormData;
-        const editIndex = this.state.editIndex;
-        addtionalFieldsObj[editIndex] = newFieldObj[0];
+        const editIndex          = this.state.editIndex;
+
+        additionalFieldsObj[editIndex] = newFieldObj[0];
         registrationFormData[parseInt(editIndex) + 3] = newFieldObj[0];
+
         this.props.allFieldsData(registrationFormData);
+
         this.setState({
-            addtionalFieldsObj: addtionalFieldsObj,
+            additionalFieldsObj: additionalFieldsObj,
             registrationFormData: registrationFormData,
             editModalField: false
         });
@@ -75,6 +82,7 @@ class AdditionalFields extends Component {
     };
     handleDeleteField = (event) => {
         const currentIndex = event.currentTarget.attributes.getNamedItem('index').value;
+
         confirmAlert({
             customUI: ({onClose}) => {
                 return (
@@ -88,14 +96,14 @@ class AdditionalFields extends Component {
                                     let registrationFormData = this.state.registrationFormData;
                                     registrationFormData = registrationFormData.filter((cItem, index) => parseInt(index) !== parseInt(currentIndex) + 3);
                                     this.props.allFieldsData(registrationFormData);
-                                    this.setState({addtionalFieldsObj: this.state.addtionalFieldsObj.filter((cItem, index) => parseInt(index) !== parseInt(currentIndex))});
+                                    this.setState({additionalFieldsObj: this.state.additionalFieldsObj.filter((cItem, index) => parseInt(index) !== parseInt(currentIndex))});
                                     this.setState({registrationFormData: registrationFormData});
                                     onClose();
                                 }}
                                 className="btn-yes"
                             >
                                 Yes, Delete it!
-                                <span className="dashicons dashicons-update spinner-icon"></span>
+                                <span className="dashicons dashicons-update spinner-icon" />
                             </button>
                         </div>
                     </div>
@@ -104,60 +112,65 @@ class AdditionalFields extends Component {
         });
     };
     handleMoveUp = (event) => {
-        const {addtionalFieldsObj, compulsoryFieldsObj} = this.state;
-        let addtionalFieldsSwapObj = addtionalFieldsObj;
-        const currentIndex = event.currentTarget.attributes.getNamedItem('index').value;
+        const {additionalFieldsObj, compulsoryFieldsObj} = this.state;
+        let additionalFieldsSwapObj = additionalFieldsObj;
+        const currentIndex   = event.currentTarget.attributes.getNamedItem('index').value;
         const UpElementIndex = parseInt(currentIndex) - 1;
 
-        var b = addtionalFieldsSwapObj[currentIndex];
-        addtionalFieldsSwapObj[currentIndex] = addtionalFieldsSwapObj[UpElementIndex];
-        addtionalFieldsSwapObj[UpElementIndex] = b;
+        var b = additionalFieldsSwapObj[currentIndex];
+        additionalFieldsSwapObj[currentIndex] = additionalFieldsSwapObj[UpElementIndex];
+        additionalFieldsSwapObj[UpElementIndex] = b;
 
-        const registrationFormSwapObj = [...compulsoryFieldsObj, ...addtionalFieldsSwapObj];
+        const registrationFormSwapObj = [...compulsoryFieldsObj, ...additionalFieldsSwapObj];
         this.props.allFieldsData(registrationFormSwapObj);
-        this.setState({addtionalFieldsObj: addtionalFieldsSwapObj, registrationFormData: registrationFormSwapObj});
+        this.setState({additionalFieldsObj: additionalFieldsSwapObj, registrationFormData: registrationFormSwapObj});
 
     };
     handleMoveDown = (event) => {
-        const {modalPopup, addtionalFieldsObj, registrationFormData, compulsoryFieldsObj} = this.state;
-        let addtionalFieldsSwapObj = addtionalFieldsObj;
-        const currentIndex = event.currentTarget.attributes.getNamedItem('index').value;
+        const {modalPopup, additionalFieldsObj, registrationFormData, compulsoryFieldsObj} = this.state;
+        let additionalFieldsSwapObj = additionalFieldsObj;
+        const currentIndex     = event.currentTarget.attributes.getNamedItem('index').value;
         const downElementIndex = parseInt(currentIndex) + 1;
 
-        var b = addtionalFieldsSwapObj[currentIndex];
-        addtionalFieldsSwapObj[currentIndex] = addtionalFieldsSwapObj[downElementIndex];
-        addtionalFieldsSwapObj[downElementIndex] = b;
+        // TODO: Need to replace "b" will normal name and also switch to let or const
+        //  Since it was used only once in 2 lines under - we can remove this variable at all
+        var b = additionalFieldsSwapObj[currentIndex];
+        additionalFieldsSwapObj[currentIndex] = additionalFieldsSwapObj[downElementIndex];
+        additionalFieldsSwapObj[downElementIndex] = b;
 
-        const registrationFormSwapObj = [...compulsoryFieldsObj, ...addtionalFieldsSwapObj];
+        const registrationFormSwapObj = [...compulsoryFieldsObj, ...additionalFieldsSwapObj];
         this.props.allFieldsData(registrationFormSwapObj);
 
-        this.setState({addtionalFieldsObj: addtionalFieldsSwapObj, registrationFormData: registrationFormSwapObj});
+        this.setState({additionalFieldsObj: additionalFieldsSwapObj, registrationFormData: registrationFormSwapObj});
 
     };
     camelCase = (str) => {
         return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
-            return 0 == index ? word.toLowerCase() : word.toUpperCase();
+            return 0 === index ? word.toLowerCase() : word.toUpperCase();
         }).replace(/\s+/g, '');
     };
 
     handleEditField = (event) => {
         const currentIndex = event.currentTarget.attributes.getNamedItem('index').value;
-        let editFieldData = [];
-        editFieldData.push(this.state.addtionalFieldsObj[currentIndex]);
+        let editFieldData  = [];
+
+        editFieldData.push(this.state.additionalFieldsObj[currentIndex]);
         this.setState({editModalField: true, editFieldData: editFieldData, editIndex: currentIndex});
     };
     handleEditModelClose = () => {
         this.setState({editModalField: false});
     };
 
+    // TODO: This render function is very big.
+    //  It's difficult to follow the logic, will be better to divide this code to separate function and call in right place.. Benefits of it are: better code structure, easy testing and support
     render() {
-        const {modalPopup, addtionalFieldsObj, editModalField, editFieldData} = this.state;
+        const {modalPopup, additionalFieldsObj, editModalField, editFieldData} = this.state;
         return (
             <div id="additional-fields-wrap" className="additional-fields-wrap">
                 <h3> Additional Fields</h3>
                 <div className="add-new-fields-wrap" id="add-new-fields-wrap">
                     {
-                        0 < addtionalFieldsObj.length && addtionalFieldsObj.map((item, index) => {
+                        0 < additionalFieldsObj.length && additionalFieldsObj.map((item, index) => {
                             const enArr = item.en;
                             const arArr = item.ar;
                             return (
@@ -195,16 +208,16 @@ class AdditionalFields extends Component {
                                         <div className="field-controles">
                                             <a className="controle-edit" index={index}
                                                onClick={this.handleEditField}><span
-                                                className="dashicons dashicons-edit"></span></a>
+                                                className="dashicons dashicons-edit" /></a>
                                             <a className="controle-delete" index={index}
                                                onClick={this.handleDeleteField}><span
-                                                className="dashicons dashicons-trash"></span></a>
+                                                className="dashicons dashicons-trash" /></a>
                                             <a className="controle-move-up" index={index}
                                                onClick={this.handleMoveUp}><span
-                                                className="dashicons dashicons-arrow-up-alt"></span> Move Up</a>
+                                                className="dashicons dashicons-arrow-up-alt" /> Move Up</a>
                                             <a className="controle-move-down" index={index}
                                                onClick={this.handleMoveDown}><span
-                                                className="dashicons dashicons-arrow-down-alt"></span> Move Down</a>
+                                                className="dashicons dashicons-arrow-down-alt" /> Move Down</a>
                                         </div>
                                     </div>
                                     }
@@ -214,7 +227,8 @@ class AdditionalFields extends Component {
                                             <div className="field-container en-field">
                                                 <span className="field-label">{enArr.label}{enArr.required &&
                                                 <sup className="medatory"> *</sup>}</span>
-                                                    <label htmlFor={enArr.id} className="screen-reader-text">{enArr.label}</label>
+                                                    <label htmlFor={enArr.id}
+                                                           className="screen-reader-text">{enArr.label}</label>
                                                        <textarea
                                                            type="textarea"
                                                            className={enArr.className}
@@ -228,7 +242,8 @@ class AdditionalFields extends Component {
                                             <div className="field-container ar-field">
                                                 <span className="field-label">{arArr.label}{arArr.required &&
                                                 <sup className="medatory"> *</sup>}</span>
-                                                    <label htmlFor={arArr.id} className="screen-reader-text">{arArr.label}</label>
+                                                    <label htmlFor={arArr.id}
+                                                           className="screen-reader-text">{arArr.label}</label>
                                                        <textarea
                                                            type="textarea"
                                                            className={arArr.className}
@@ -243,16 +258,16 @@ class AdditionalFields extends Component {
                                         <div className="field-controles">
                                             <a className="controle-edit" index={index}
                                                onClick={this.handleEditField}><span
-                                                className="dashicons dashicons-edit"></span></a>
+                                                className="dashicons dashicons-edit" /></a>
                                             <a className="controle-delete" index={index}
                                                onClick={this.handleDeleteField}><span
-                                                className="dashicons dashicons-trash"></span></a>
+                                                className="dashicons dashicons-trash" /></a>
                                             <a className="controle-move-up" index={index}
                                                onClick={this.handleMoveUp}><span
-                                                className="dashicons dashicons-arrow-up-alt"></span> Move Up</a>
+                                                className="dashicons dashicons-arrow-up-alt" /> Move Up</a>
                                             <a className="controle-move-down" index={index}
                                                onClick={this.handleMoveDown}><span
-                                                className="dashicons dashicons-arrow-down-alt"></span> Move Down</a>
+                                                className="dashicons dashicons-arrow-down-alt" /> Move Down</a>
                                         </div>
                                     </div>
                                     }
@@ -290,16 +305,16 @@ class AdditionalFields extends Component {
                                         <div className="field-controles">
                                             <a className="controle-edit" index={index}
                                                onClick={this.handleEditField}><span
-                                                className="dashicons dashicons-edit"></span></a>
+                                                className="dashicons dashicons-edit" /></a>
                                             <a className="controle-delete" index={index}
                                                onClick={this.handleDeleteField}><span
-                                                className="dashicons dashicons-trash"></span></a>
+                                                className="dashicons dashicons-trash" /></a>
                                             <a className="controle-move-up" index={index}
                                                onClick={this.handleMoveUp}><span
-                                                className="dashicons dashicons-arrow-up-alt"></span> Move Up</a>
+                                                className="dashicons dashicons-arrow-up-alt" /> Move Up</a>
                                             <a className="controle-move-down" index={index}
                                                onClick={this.handleMoveDown}><span
-                                                className="dashicons dashicons-arrow-down-alt"></span> Move Down</a>
+                                                className="dashicons dashicons-arrow-down-alt" /> Move Down</a>
                                         </div>
                                     </div>
                                     }
@@ -348,16 +363,16 @@ class AdditionalFields extends Component {
                                         <div className="field-controles">
                                             <a className="controle-edit" index={index}
                                                onClick={this.handleEditField}><span
-                                                className="dashicons dashicons-edit"></span></a>
+                                                className="dashicons dashicons-edit" /></a>
                                             <a className="controle-delete" index={index}
                                                onClick={this.handleDeleteField}><span
-                                                className="dashicons dashicons-trash"></span></a>
+                                                className="dashicons dashicons-trash" /></a>
                                             <a className="controle-move-up" index={index}
                                                onClick={this.handleMoveUp}><span
-                                                className="dashicons dashicons-arrow-up-alt"></span> Move Up</a>
+                                                className="dashicons dashicons-arrow-up-alt" /> Move Up</a>
                                             <a className="controle-move-down" index={index}
                                                onClick={this.handleMoveDown}><span
-                                                className="dashicons dashicons-arrow-down-alt"></span> Move Down</a>
+                                                className="dashicons dashicons-arrow-down-alt" /> Move Down</a>
                                         </div>
                                     </div>
                                     }
@@ -406,16 +421,16 @@ class AdditionalFields extends Component {
                                         <div className="field-controles">
                                             <a className="controle-edit" index={index}
                                                onClick={this.handleEditField}><span
-                                                className="dashicons dashicons-edit"></span></a>
+                                                className="dashicons dashicons-edit" /></a>
                                             <a className="controle-delete" index={index}
                                                onClick={this.handleDeleteField}><span
-                                                className="dashicons dashicons-trash"></span></a>
+                                                className="dashicons dashicons-trash" /></a>
                                             <a className="controle-move-up" index={index}
                                                onClick={this.handleMoveUp}><span
-                                                className="dashicons dashicons-arrow-up-alt"></span> Move Up</a>
+                                                className="dashicons dashicons-arrow-up-alt" /> Move Up</a>
                                             <a className="controle-move-down" index={index}
                                                onClick={this.handleMoveDown}><span
-                                                className="dashicons dashicons-arrow-down-alt"></span> Move Down</a>
+                                                className="dashicons dashicons-arrow-down-alt" /> Move Down</a>
                                         </div>
                                     </div>
                                     }
@@ -427,39 +442,44 @@ class AdditionalFields extends Component {
                                                 <sup className="medatory"> *</sup>}</span>
                                                 <div className="field-group">
                                                     <div className="file-upload-wrap">
-                                                        <label htmlFor="en_filename" className="screen-reader-text">file</label>
+                                                        <label htmlFor="en_filename"
+                                                               className="screen-reader-text">file</label>
                                                             <input
                                                                 type="text"
                                                                 id="en_filename"
                                                                 readOnly={true}
                                                             />
-                                                        <label htmlFor={enArr.id} className="screen-reader-text">{enArr.id}</label>
-                                                            <input
-                                                                type="file"
-                                                                name={enArr.id}
-                                                                id={enArr.id}
-                                                                className="form-control"
-                                                                style={{display: 'none'}}
-                                                                onChange={() => {
-                                                                    let fileinput = document.getElementById(enArr.id);
-                                                                    let textinput = document.getElementById('en_filename');
-                                                                    textinput.value = fileinput.value;
-                                                                }}
-                                                            />
+                                                        <label htmlFor={enArr.id}
+                                                               className="screen-reader-text">{enArr.id}</label>
+                                                        <input
+                                                            type="file"
+                                                            name={enArr.id}
+                                                            id={enArr.id}
+                                                            className="form-control"
+                                                            style={{display: 'none'}}
+                                                            onChange={() => {
+                                                                let fileinput = document.getElementById(enArr.id);
+                                                                let textinput = document.getElementById('en_filename');
+                                                                textinput.value = fileinput.value;
+                                                            }}
+                                                        />
                                                     </div>
                                                     <div className="button-wrap">
-                                                        <label htmlFor={enArr.button1} className="screen-reader-text">{enArr.button1}</label>
-                                                            <input
-                                                                type="button"
-                                                                name={enArr.button1}
-                                                                value={enArr.button1}
-                                                                id={enArr.button1}
-                                                                onClick={() => {
-                                                                    var fileinput = document.getElementById(enArr.id);
-                                                                    fileinput.click();
-                                                                }}
-                                                                className="button button-primary"
-                                                            />
+                                                        <label htmlFor={enArr.button1}
+                                                               className="screen-reader-text">
+                                                            {enArr.button1}
+                                                        </label>
+                                                        <input
+                                                            type="button"
+                                                            name={enArr.button1}
+                                                            value={enArr.button1}
+                                                            id={enArr.button1}
+                                                            onClick={() => {
+                                                                var fileinput = document.getElementById(enArr.id);
+                                                                fileinput.click();
+                                                            }}
+                                                            className="button button-primary"
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
@@ -468,13 +488,17 @@ class AdditionalFields extends Component {
                                                 <sup className="medatory"> *</sup>}</span>
                                                 <div className="field-group">
                                                     <div className="file-upload-wrap">
-                                                        <label htmlFor="ar_filename" className="screen-reader-text">file</label>
+                                                        <label htmlFor="ar_filename"
+                                                               className="screen-reader-text">file</label>
                                                             <input
                                                                 type="text"
                                                                 id="ar_filename"
                                                                 readOnly={true}
                                                             />
-                                                            <label htmlFor={arArr.id} className="screen-reader-text">{arArr.id}</label>
+                                                            <label htmlFor={arArr.id}
+                                                                   className="screen-reader-text">
+                                                                {arArr.id}
+                                                            </label>
                                                             <input
                                                                 type="file"
                                                                 name={arArr.id}
@@ -489,7 +513,10 @@ class AdditionalFields extends Component {
                                                             />
                                                     </div>
                                                     <div className="button-wrap">
-                                                            <label htmlFor={arArr.button1} className="screen-reader-text">{arArr.button1}</label>
+                                                            <label htmlFor={arArr.button1}
+                                                                   className="screen-reader-text">
+                                                                {arArr.button1}
+                                                            </label>
                                                             <input
                                                                 type="button"
                                                                 name={arArr.button1}
@@ -508,16 +535,16 @@ class AdditionalFields extends Component {
                                         <div className="field-controles">
                                             <a className="controle-edit" index={index}
                                                onClick={this.handleEditField}><span
-                                                className="dashicons dashicons-edit"></span></a>
+                                                className="dashicons dashicons-edit" /></a>
                                             <a className="controle-delete" index={index}
                                                onClick={this.handleDeleteField}><span
-                                                className="dashicons dashicons-trash"></span></a>
+                                                className="dashicons dashicons-trash" /></a>
                                             <a className="controle-move-up" index={index}
                                                onClick={this.handleMoveUp}><span
-                                                className="dashicons dashicons-arrow-up-alt"></span> Move Up</a>
+                                                className="dashicons dashicons-arrow-up-alt" /> Move Up</a>
                                             <a className="controle-move-down" index={index}
                                                onClick={this.handleMoveDown}><span
-                                                className="dashicons dashicons-arrow-down-alt"></span> Move Down</a>
+                                                className="dashicons dashicons-arrow-down-alt" /> Move Down</a>
                                         </div>
                                     </div>
                                     }
@@ -526,16 +553,19 @@ class AdditionalFields extends Component {
                         })
                     }
                     <div className="button-wrap">
-                        <button className="button button-primary btn-add-new-fields" onClick={this.handleModal}>Add New Fields</button>
+                        <button className="button button-primary btn-add-new-fields"
+                                onClick={this.handleModal}>Add New Fields</button>
                     </div>
                     {modalPopup &&
-                    <div className="add-new-fields-modal"><AddNewFieldModal handleAddField={this.handleAddField}
-                                                                            handleModelClose={this.handleModelClose}/>
+                    <div className="add-new-fields-modal">
+                        <AddNewFieldModal handleAddField={this.handleAddField}
+                                          handleModelClose={this.handleModelClose} />
                     </div>}
                     {editModalField &&
-                    <div className="add-new-fields-modal"><EditFieldModal editFieldData={editFieldData}
-                                                                          handleEditField={this.handleEditedFieldData}
-                                                                          handleEditModelClose={this.handleEditModelClose}/>
+                    <div className="add-new-fields-modal">
+                        <EditFieldModal editFieldData={editFieldData}
+                                        handleEditField={this.handleEditedFieldData}
+                                        handleEditModelClose={this.handleEditModelClose} />
                     </div>}
                 </div>
             </div>
