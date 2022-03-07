@@ -44,14 +44,23 @@ class EditFieldModal extends Component {
 
     handleChange = (event) => {
         let editFieldData = this.state.editFieldData;
-        if ('enLabelName' === event.target.name) {
-            editFieldData[0].en.label = event.target.value;
-        } else if ('arLabelName' === event.target.name) {
-            editFieldData[0].ar.label = event.target.value;
-        } else if ('enButtonLabel1' === event.target.name) {
-            editFieldData[0].en.button1 = event.target.value;
-        } else if ('arButtonLabel1' === event.target.name) {
-            editFieldData[0].ar.button1 = event.target.value;
+
+        switch ( event.target.name ) {
+            case 'enLabelName':
+                editFieldData[0].en.label = event.target.value;
+                break;
+
+            case 'arLabelName':
+                editFieldData[0].ar.label = event.target.value;
+                break;
+
+            case 'enButtonLabel1':
+                editFieldData[0].en.button1 = event.target.value;
+                break;
+
+            case 'arButtonLabel1':
+                editFieldData[0].ar.button1 = event.target.value;
+                break;
         }
 
         this.setState({
@@ -63,8 +72,10 @@ class EditFieldModal extends Component {
     onSelectValidationType = (event) => {
         event.preventDefault();
         let editFieldData = this.state.editFieldData;
+
         editFieldData[0].en.type = event.target.value;
         editFieldData[0].ar.type = event.target.value;
+
         this.setState({
             editFieldData: editFieldData
         });
@@ -77,37 +88,41 @@ class EditFieldModal extends Component {
 
     camelCase = (str) => {
         return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
-            return 0 == index ? word.toLowerCase() : word.toUpperCase();
+            return 0 === index ? word.toLowerCase() : word.toUpperCase();
         }).replace(/\s+/g, '');
     };
 
     handleRequiredCheck = (event) => {
-        let checked = event.target.checked;
         let editFieldData = this.state.editFieldData;
-        editFieldData[0].en.required = checked;
-        editFieldData[0].ar.required = checked;
+
+        editFieldData[0].en.required = event.target.checked;
+        editFieldData[0].ar.required = event.target.checked;
+
         this.setState({
             editFieldData: editFieldData
         });
     };
 
     handleAllowMultiple = (event) => {
-        let checked = event.target.checked;
         let editFieldData = this.state.editFieldData;
-        editFieldData[0].en.multiple = checked;
-        editFieldData[0].ar.multiple = checked;
+
+        editFieldData[0].en.multiple = event.target.checked;
+        editFieldData[0].ar.multiple = event.target.checked;
+
         this.setState({
             editFieldData: editFieldData
         });
     };
 
     handleSaveNewField = (event) => {
-        const enArr = this.state.editFieldData[0].en;
-        const arArr = this.state.editFieldData[0].ar;
-        const option = this.state.option;
+        const enArr          = this.state.editFieldData[0].en;
+        const arArr          = this.state.editFieldData[0].ar;
+        const option         = this.state.option;
         const enOptionValues = this.state.enOptionValues;
         const arOptionValues = this.state.arOptionValues;
+
         this.setState({errorMsg: false});
+        // TODO: If we'll use switch operator - the code will be clearer
         if ('' !== enArr.label && '' !== arArr.label) {
             if ('Text Input' === enArr.control) {
                 if ('' !== enArr.type) {
@@ -169,6 +184,8 @@ class EditFieldModal extends Component {
         $('.multiple-option-group').animate({scrollTop: $('.option-wrap:last').offset().top}, 500);
         this.setState({option});
     };
+
+    // TODO: Try tto add comments in your code. The general rule - your code should understandable for all new people in a team.. Read book "Чистый код_ создание, анализ и рефакторинг ( PDFDrive ).pdf"
     deleteOption = (event) => {
         const currentIndex = event.currentTarget.attributes.getNamedItem('index').value;
         let editFieldData = this.state.editFieldData;
@@ -244,7 +261,7 @@ class EditFieldModal extends Component {
                 <div className="modal-wrap">
                     <div className="modal-inner">
                         <span className="dashicons dashicons-no-alt main-clearbtn"
-                              onClick={this.handleModalClose}></span>
+                              onClick={this.handleModalClose} />
                         {0 < this.state.editFieldData.length && this.state.editFieldData.map((item, index) => {
                             const enArr = item.en;
                             const arArr = item.ar;
@@ -256,7 +273,9 @@ class EditFieldModal extends Component {
                                         </div>
                                         <div className="field-content-wrap">
                                             <label className="checkbox-container">
-                                                <input id="input_checkbox" type="checkbox" checked={enArr.required}
+                                                <input id="input_checkbox"
+                                                       type="checkbox"
+                                                       checked={enArr.required}
                                                        onChange={this.handleRequiredCheck}/>
                                             </label>
                                         </div>
@@ -361,10 +380,12 @@ class EditFieldModal extends Component {
                                                                                 placeholder={item.ar.label}
                                                                             />
                                                                         </label>
+                                                                        { // TODO: "index" attr is not allowed here
+                                                                         }
                                                                         <span
                                                                             className="dashicons dashicons-no-alt remove-option-text"
                                                                             index={index}
-                                                                            onClick={this.deleteOption}></span>
+                                                                            onClick={this.deleteOption}/>
                                                                     </div>
                                                                 </Fragment>
                                                             ))
@@ -372,7 +393,7 @@ class EditFieldModal extends Component {
                                                     </div>
                                                     <div className="add-new-option-text"
                                                          onClick={this.addNewOptionHandle}>
-                                                        <span className="dashicons dashicons-plus-alt2"></span>
+                                                        <span className="dashicons dashicons-plus-alt2" />
                                                         <span>Add Option</span>
                                                     </div>
                                                 </div>
@@ -420,7 +441,7 @@ class EditFieldModal extends Component {
                                                                         <span
                                                                             className="dashicons dashicons-no-alt remove-option-text"
                                                                             index={index}
-                                                                            onClick={this.deleteOption}></span>
+                                                                            onClick={this.deleteOption} />
                                                                     </div>
                                                                 </Fragment>
                                                             ))
@@ -428,7 +449,7 @@ class EditFieldModal extends Component {
                                                     </div>
                                                     <div className="add-new-option-text"
                                                          onClick={this.addNewOptionHandle}>
-                                                        <span className="dashicons dashicons-plus-alt2"></span>
+                                                        <span className="dashicons dashicons-plus-alt2" />
                                                         <span>Add Option</span>
                                                     </div>
                                                 </div>
@@ -476,7 +497,7 @@ class EditFieldModal extends Component {
                                                                         <span
                                                                             className="dashicons dashicons-no-alt remove-option-text"
                                                                             index={index}
-                                                                            onClick={this.deleteOption}></span>
+                                                                            onClick={this.deleteOption} />
                                                                     </div>
                                                                 </Fragment>
                                                             ))
@@ -484,7 +505,7 @@ class EditFieldModal extends Component {
                                                     </div>
                                                     <div className="add-new-option-text"
                                                          onClick={this.addNewOptionHandle}>
-                                                        <span className="dashicons dashicons-plus-alt2"></span>
+                                                        <span className="dashicons dashicons-plus-alt2" />
                                                         <span>Add Option</span>
                                                     </div>
                                                 </div>
@@ -500,6 +521,10 @@ class EditFieldModal extends Component {
                                                 <span>Upload Options<sup className="medatory"> *</sup></span></div>
                                             <div className="field-content-wrap">
                                                 <div className="multiple-check-option">
+                                                    {
+                                                        // TODO: Copy-paste should be removed.
+                                                        //  Move repeated code in separate component with parameters
+                                                    }
                                                     <div className="check-option-wrap">
                                                         <label htmlFor="pdf">
                                                             <input name="uploadOption[]"

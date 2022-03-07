@@ -89,6 +89,7 @@ function register_attendee( $request ) {
 
 	$title_meta_key = 'dffmain_post_title';
 
+	// TODO: all input shouldn't be updated.. it violates rule for Immutable input parameters
 	$_POST['event_title'] = get_post_meta( $event_id, $title_meta_key, true );
 	if ( 'publish' !== $status || empty( $_POST['event_title'] ) ) {
 		return new \WP_REST_Response(
@@ -174,6 +175,8 @@ function register_attendee( $request ) {
 			);
 		}
 
+
+		//TODO: Don't update input parameters
 		$_POST['api_registration'] = 'yes';
 		foreach ( $parameters as $k => $v ) {
 			$_POST[ $k ] = $v;
@@ -243,24 +246,23 @@ function add_form_data( $request ) {
 	$post_id              = $parameters['postID'];
 	$registrationformdata = $parameters['registrationFormData'];
 
-	if ( $post_id ) {
-		$post_id                = intval( $post_id );
-		$registration_form_data = get_post_meta( $post_id, '_registration_form_data', true );
-		if ( ! empty( $registration_form_data ) ) {
-			update_post_meta( $post_id, '_registration_form_data', $registrationformdata );
-		} else {
-			add_post_meta( $post_id, '_registration_form_data', $registrationformdata );
-		}
-		return new \WP_REST_Response(
-			array(
-				'success'                => true,
-				'registration_form_data' => $registration_form_data,
-			),
-			200
-		);
+	if ( !$post_id )  return;
+
+	$post_id                = intval( $post_id );
+	$registration_form_data = get_post_meta( $post_id, '_registration_form_data', true );
+	if ( ! empty( $registration_form_data ) ) {
+		update_post_meta( $post_id, '_registration_form_data', $registrationformdata );
 	} else {
-		return;
+		add_post_meta( $post_id, '_registration_form_data', $registrationformdata );
 	}
+	return new \WP_REST_Response(
+		array(
+			'success'                => true,
+			'registration_form_data' => $registration_form_data,
+		),
+		200
+	);
+
 }
 
 /**
@@ -279,6 +281,7 @@ function select_registration_form_for_event_callback() {
 		$saved_template_id      = get_post_meta( $post_id, '_wp_template_id', true );
 	}
 	if ( intval( $saved_template_id ) === intval( $template_id ) ) {
+		// TODO: don't understand what is happen here
 		$field_preference = $field_preference;
 	} else {
 		$field_preference = array();
@@ -287,6 +290,10 @@ function select_registration_form_for_event_callback() {
 	$additional_field_html = '';
 	$select_all            = true;
 	$html                  = '';
+
+
+	// TODO: below spaghetti code.. Should be optimized for better optimization and clarity
+
 	if ( ! empty( $registration_form_data ) && isset( $registration_form_data ) ) {
 		foreach ( $registration_form_data as $key => $item ) {
 			$en_arr = $item['en'];

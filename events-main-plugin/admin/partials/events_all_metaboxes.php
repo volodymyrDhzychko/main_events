@@ -1,10 +1,15 @@
 <?php
-
 /**
  * Function for Events editor screen with tabs.
  */
 function tab_editor_function() {
 	global $post;
+
+	// TODO: You shouldn't get several post meta as separate call "get_post_meta".
+    // Each time when you're call it - you're making request to DB.
+    // So the right way is call get_post_meta( $post->ID ) - only 1 request to DB and receive assoc array
+    // and then use it like general array
+
 	$events_overview         = get_post_meta( $post->ID, 'events_overview', true );
 	$dffmain_events_agenda   = get_post_meta( $post->ID, 'dffmain_events_agenda', true );
 	$dffmain_event_location  = get_post_meta( $post->ID, 'dffmain_event_location', true );
@@ -14,7 +19,7 @@ function tab_editor_function() {
 	$action                  = filter_input( INPUT_GET, 'action', FILTER_SANITIZE_STRING );
 	$action                  = isset( $action ) ? $action : '';
 	$event_cancelled         = get_post_status( $post->ID );
-	$post_id     = $post->ID;
+	$post_id                 = $post->ID;
 
 	$args = array(
 		'post_type'     => 'attendees',
@@ -34,12 +39,12 @@ function tab_editor_function() {
 	<?php if ( ! empty( $template_id ) && 'edit' === $action ) { ?>
 		<div class="attendee-button-wrap">
 			<div class="button-wrap">
-
 				<?php if ( 'cancelled' === $event_cancelled ) { ?>
 					<a class="button button-primary cancelled" href="javascript:void(0)">
 						Event is Cancelled
 					</a>
-				<?php } else { ?>
+				<?php }
+				else { ?>
 					<a 
 						class="button button-primary"
 					   	href="<?php echo esc_url( admin_url( 'edit.php?post_type=attendees&event_id=' . $post->ID ) ); ?>"
@@ -64,7 +69,6 @@ function tab_editor_function() {
 				<?php } ?>
 			</div>
 		</div>
-
 	<?php } ?>
 
 	<div class="event_editor_section">
@@ -92,7 +96,7 @@ function tab_editor_function() {
 					class="" 
 					value="<?php echo esc_attr( $dffmain_post_title ); ?>"
 					placeholder="Enter Title Here"
-				>
+				/>
 			</div>
 			<div class="heading_section">
 				<h3>
@@ -157,8 +161,8 @@ function tab_editor_function() {
 				</textarea>
 			</label>
 			<div class="save_next_section">
-				<input type="button" name="save_next" class="save_next button-primary" value="Save & Next >">
-				<input type="hidden" name="next_step_id" class="next_step_id" value="registration_form">
+				<input type="button" name="save_next" class="save_next button-primary" value="Save & Next >" />
+				<input type="hidden" name="next_step_id" class="next_step_id" value="registration_form" />
 			</div>
 		</div>
 
@@ -180,6 +184,8 @@ function tab_editor_function() {
 							'posts_per_page' => -1,
 							'fields'         => 'ids',
 						);
+						// TODO: After each custom WP_Query request - don't forget to call function
+                        // wp_reset_postdata(); to Restore original Post Data
 						$register_forms_data = new WP_Query( $args_register_forms );
 
 						if ( isset( $register_forms_data->posts ) && ! empty( $register_forms_data->posts ) ) {
@@ -213,21 +219,31 @@ function tab_editor_function() {
 						templateid="<?php echo esc_attr( $template_id ); ?>" 
 						value="Undo Changes"
 						disabled="disabled"
-					>
+					/>
 				</div>
 			</div>
 			<div class="registration-form-wrap"></div>
 			<div class="save_next_section">
-				<input type="button" name="save_next" class="save_next button-primary" value="Save & Next >">
-				<input type="hidden" name="next_step_id" class="next_step_id" value="general_settings">
+				<input type="button"
+                       name="save_next"
+                       class="save_next button-primary"
+                       value="Save & Next >" />
+				<input type="hidden"
+                       name="next_step_id"
+                       class="next_step_id"
+                       value="general_settings" />
 			</div>
 		</div>
 
 		<div class="tabcontent" id="general_settings">
 			<?php $current_language_name = get_current_language_name(); ?>
 
-			<input type="hidden" class="curr_post_id" value="<?php echo esc_attr( $post->ID ); ?>">
-			<input type="hidden" class="curr_site_id" value="<?php echo esc_attr( get_current_blog_id() ); ?>">
+			<input type="hidden"
+                   class="curr_post_id"
+                   value="<?php echo esc_attr( $post->ID ); ?>" />
+			<input type="hidden"
+                   class="curr_site_id"
+                   value="<?php echo esc_attr( get_current_blog_id() ); ?>" />
 	
 			<h3>
 				Send Special Email
@@ -245,7 +261,7 @@ function tab_editor_function() {
 					data-lang="<?php echo $current_language_name; ?>" 
 					class="dffmain_mail_subject" 
 					placeholder="{{e_eventname}} | Email Subject Here"
-				>
+				/>
 			</div>
 			<?php
 			wp_editor(
@@ -296,7 +312,7 @@ function tab_editor_function() {
 						data-lang="<?php echo $language_name; ?>"
 						class="dffmain_mail_subject"  
 						<?php if ( $translation['is_rtl'] ) echo 'dir="rtl"'; ?>
-						placeholder="{{e_eventname}} | Email Subject Here">
+						placeholder="{{e_eventname}} | Email Subject Here" />
 				</div>
 				<?php
 				wp_editor(
@@ -341,7 +357,7 @@ function tab_editor_function() {
 					data-id="<?php echo esc_attr( $post->ID ); ?>"
 					class="button button-primary btn-send-email" 
 					value="Send" 
-				>
+				/>
 			</div>
 
 			<div class="accordian_email_history">
@@ -373,7 +389,6 @@ function tab_editor_function() {
 										<tr>
 											<td>
 												<?php echo esc_html( $count ); ?>
-												
 											<td>
 												<?php echo esc_html( $event_email_history_data['email_date'] ); ?>
 											</td>
@@ -414,8 +429,10 @@ function tab_editor_function() {
 										</tr>
 										<?php
 										$count++;
-									}/**foreach ( $event_email_history as $event_email_history_data ) { */
-								}/**if ( isset( $event_email_history ) && ! empty( $event_email_history ) ) { */
+									}
+									/* foreach ( $event_email_history as $event_email_history_data )  */
+								}
+								/* if ( isset( $event_email_history ) && ! empty( $event_email_history ) ) */
 								?>
 							</tbody>
 						</table>
@@ -445,9 +462,8 @@ function event_cost_function() {
 			id="free"
 			value="Free" 
 			<?php checked( $event_cost_name, 'Free' ); ?> 
-		>
+		/>
 		Free
-	</label>
 	</label>
 	<label for="paid">
 		<span class="screen-reader-text">event_cost_name_paid</span>
@@ -457,7 +473,7 @@ function event_cost_function() {
 			id="paid"
 			value="Paid" 
 			<?php checked( $event_cost_name, 'Paid' ); ?>
-		>
+		/>
 		Paid
 	</label>
 	<?php
@@ -470,18 +486,23 @@ function event_cost_function() {
 function event_reminder_function() {
 	global $post;
 	$event_reminder_select_box = get_post_meta( $post->ID, 'event_reminder_select_box', true );
+
 	?>
 	<label for="event_reminder_select_box">
 	<span class="screen-reader-text">event reminder select box</span>
-		<select id="u1832_input" name="event_reminder_select_box" class="event_reminder_select_box" id="event_reminder_select_box">
-			<option class="u1832_input_option" value="1">Select Reminder Day</option>
-			<option class="u1832_input_option" value="1" <?php selected( $event_reminder_select_box, '1' ); ?>>1</option>
-			<option class="u1832_input_option" value="2" <?php selected( $event_reminder_select_box, '2' ); ?>>2</option>
-			<option class="u1832_input_option" value="3" <?php selected( $event_reminder_select_box, '3' ); ?>>3</option>
-			<option class="u1832_input_option" value="4" <?php selected( $event_reminder_select_box, '4' ); ?>>4</option>
-			<option class="u1832_input_option" value="5" <?php selected( $event_reminder_select_box, '5' ); ?>>5</option>
-			<option class="u1832_input_option" value="6" <?php selected( $event_reminder_select_box, '6' ); ?>>6</option>
-			<option class="u1832_input_option" value="7" <?php selected( $event_reminder_select_box, '7' ); ?>>7</option>
+		<select id="u1832_input"
+                name="event_reminder_select_box"
+                class="event_reminder_select_box"
+                id="event_reminder_select_box">
+
+            <?php
+            for ($i = 0; $i<=7; $i++) {
+	            if ( !$i ) echo '<option class="u1832_input_option" value="1">Select Reminder Day</option>';
+
+	            echo '<option class="u1832_input_option" 
+                              value="1" ' . selected( $event_reminder_select_box, $i ) . '>' . $i . '</option>';
+            }
+            ?>
 		</select>
 	</label>
 	<?php
@@ -498,7 +519,11 @@ function event_date_function() {
 	?>
 	<label for="event_date_select">
 		<span class="screen-reader-text">event_date_select</span>
-			<input type="date" id="event_date_select" class="event_date_select" name="event_date_select" value="<?php echo esc_attr( $event_date_select ); ?>" placeholder=""/>
+			<input type="date" id="event_date_select"
+                   class="event_date_select"
+                   name="event_date_select"
+                   value="<?php echo esc_attr( $event_date_select ); ?>"
+            />
 	</label>
 	<?php
 }
@@ -507,14 +532,20 @@ function event_date_function() {
  * Function for event end date meta box.
  */
 function event_end_date_function() {
-	
 
 	global $post;
 	$event_end_date_select = get_post_meta( $post->ID, 'event_end_date_select', true );
 	?>
 	<label for="event_end_date_select">
 		<span class="screen-reader-text">event_end_date_select</span>
-			<input type="date" id="event_end_date_select" class="event_end_date_select" name="event_end_date_select" onchange="handler(event);" value="<?php echo esc_attr( $event_end_date_select ); ?>" placeholder=""/>
+			<input type="date"
+                   id="event_end_date_select"
+                   class="event_end_date_select"
+                   name="event_end_date_select"
+                   onchange="handler(event);"
+                   value="<?php echo esc_attr( $event_end_date_select ); ?>"
+            />
+
 	</label>
 	<?php
 
@@ -531,13 +562,21 @@ function event_time_function() {
 	?>
 	<label for="event_time_start_select">
 		<span class="screen-reader-text">event_time_start_select</span>
-		<input type="time" id="event_time_start_select" class="event_time_start_select" name="event_time_start_select"
-		   value="<?php echo esc_attr( $event_time_start_select ); ?>" placeholder=""/>
+		<input type="time"
+               id="event_time_start_select"
+               class="event_time_start_select"
+               name="event_time_start_select"
+		       value="<?php echo esc_attr( $event_time_start_select ); ?>"
+        />
 	</label>
 	<label for="event_time_end_select">
 		<span class="screen-reader-text">event_time_end_select</span>
-		<input type="time" id="event_time_end_select" class="event_time_end_select" name="event_time_end_select"
-		   value="<?php echo esc_attr( $event_time_end_select ); ?>" placeholder=""/>
+		<input type="time"
+               id="event_time_end_select"
+               class="event_time_end_select"
+               name="event_time_end_select"
+               value="<?php echo esc_attr( $event_time_end_select ); ?>"
+        />
 	</label>
 	<?php
 }
@@ -552,7 +591,12 @@ function event_special_instruction_function() {
 	?>
 	<label for="event_special_instruction">
 		<span class="screen-reader-text">event_special_instruction</span>
-		<textarea id="event_special_instruction" name="event_special_instruction" rows="5" cols="25"><?php echo esc_attr( $event_special_instruction ); ?></textarea>
+		<textarea id="event_special_instruction"
+                  name="event_special_instruction"
+                  rows="5"
+                  cols="25">
+            <?php echo esc_attr( $event_special_instruction ); ?>
+        </textarea>
 	</label>
 	<?php
 
@@ -569,7 +613,10 @@ function google_embed_maps_code_function() {
 	?>
 	<label for="google_embed_maps_code">
 		<span class="screen-reader-text">google_embed_maps_code</span>
-		<textarea id="google_embed_maps_code" name="google_embed_maps_code" rows="5" cols="25">
+		<textarea id="google_embed_maps_code"
+                  name="google_embed_maps_code"
+                  rows="5"
+                  cols="25">
 			<?php echo esc_attr( $google_embed_maps_code ); ?>
 		</textarea>
 	</label>
@@ -587,8 +634,12 @@ function event_google_map_function() {
 	?>
 	<label for="event_google_map_input">
 		<span class="screen-reader-text">event_google_map_input</span>
-		<input type="text" id="event_google_map_input" class="event_google_map_input" name="event_google_map_input"
-		   value="<?php echo esc_attr( $event_google_map_input ); ?>" placeholder=""/>
+		<input type="text"
+               id="event_google_map_input"
+               class="event_google_map_input"
+               name="event_google_map_input"
+		       value="<?php echo esc_attr( $event_google_map_input ); ?>"
+        />
 	</label>
 	<?php
 }
@@ -603,9 +654,9 @@ function event_detail_image_function() {
 }
 
 function event_detail_image_uploader_field( $name, $value = '') {
-	$image = '">Set Event Detail  image';
+	$image      = '">Set Event Detail  image';
 	$image_size = 'full'; // it would be better to use thumbnail size here (150x150 or so)
-	$display = 'none'; // display state ot the "Remove image" button
+	$display    = 'none'; // display state ot the "Remove image" button
 
 	if( $image_attributes = wp_get_attachment_image_src( $value, $image_size ) ) {
 
@@ -717,11 +768,14 @@ function event_attendee_limit_message_function() {
 	global $post;
 
 	$event_registration_close_message = get_post_meta( $post->ID, 'event_registration_close_message', true );
-
 	?>
 	<h4>Limit Message</h4>
-	<textarea id="event_registration_close_message" name="event_registration_close_message" rows="5" cols="25"><?php echo esc_attr( $event_registration_close_message ); ?></textarea>
+
+    <textarea id="event_registration_close_message"
+              name="event_registration_close_message"
+              rows="5" cols="25">
+        <?php echo esc_attr( $event_registration_close_message ); ?>
+    </textarea>
 
 	<?php
-
 }

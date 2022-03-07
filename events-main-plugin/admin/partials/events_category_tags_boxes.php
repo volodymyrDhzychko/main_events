@@ -60,7 +60,8 @@ function get_category_box() {
 									$child_catid = $child_cats_data->term_id;
 									?>
 									<li>
-										<label class="post_type_lable" for="<?php echo esc_attr( $child_cats_data->slug ); ?>">
+										<label class="post_type_lable"
+                                               for="<?php echo esc_attr( $child_cats_data->slug ); ?>">
 											<input
 												name="emp_category[]" type="checkbox"
 												id="<?php echo esc_attr( $child_cats_data->slug ); ?>"
@@ -80,13 +81,15 @@ function get_category_box() {
 									);
 									$super_child_cats = get_terms($get_super_children_cats );
 									?>
-									<ul class="event_super_child_category" id="event_child_<?php echo esc_attr( $child_cats_data->term_id ); ?>">
+									<ul class="event_super_child_category"
+                                        id="event_child_<?php echo esc_attr( $child_cats_data->term_id ); ?>">
 										<?php
 										if ( isset( $super_child_cats ) && ! empty( $super_child_cats ) ) {
 											foreach ( $super_child_cats as $super_child_cats_data ) {
 												?>
 												<li>
-													<label class="post_type_lable" for="<?php echo esc_attr( $super_child_cats_data->slug ); ?>">
+													<label class="post_type_lable"
+                                                           for="<?php echo esc_attr( $super_child_cats_data->slug ); ?>">
 													<input
 														name="emp_category[]" type="checkbox"
 														id="<?php echo esc_attr( $super_child_cats_data->slug ); ?>" 
@@ -97,18 +100,24 @@ function get_category_box() {
 													</label>
 												</li>
 												<?php
-											}/**foreach ( $super_child_cats as $super_child_cats_data ) { */
-										}/**if ( isset( $super_child_cats ) && ! empty( $super_child_cats ) ) { */
+											}
+											// foreach ( $super_child_cats as $super_child_cats_data )
+										}
+										// if ( isset( $super_child_cats ) && ! empty( $super_child_cats ) )
 										?>
 									</ul>
 									<?php	
-								}/**foreach ( $child_cats as $child_cats_data ) { */
-							}/**if ( isset( $child_cats ) && ! empty( $child_cats ) ) { */
+								}
+								//foreach ( $child_cats as $child_cats_data )
+							}
+							// if ( isset( $child_cats ) && ! empty( $child_cats ) )
 							?>
 						</ul>
 						<?php
-					}/**foreach ( $terms as $terms_data ) { */
-				}/**if ( isset( $terms ) && ! empty( $terms ) ) */
+					}
+					// foreach ( $terms as $terms_data )
+				}
+				// if ( isset( $terms ) && ! empty( $terms ) )
 				?>
 			</ul>
 
@@ -173,9 +182,12 @@ function get_category_box() {
 											<?php
 										}
 									}
-								}/**foreach ( $child_cats as $child_cats_data ) { */
-							}/**if ( isset( $child_cats ) && ! empty( $child_cats ) ) { */
-						}/**foreach ( $terms as $terms_data ) { */
+								}
+								// foreach ( $child_cats as $child_cats_data )
+							}
+							// if ( isset( $child_cats ) && ! empty( $child_cats ) )
+						}
+						// foreach ( $terms as $terms_data )
 						?>
 					</select>
 					<input 
@@ -207,7 +219,8 @@ function get_category_box() {
 					foreach ( $terms as $terms_data ) {
 						?>
 						<li>
-							<label class="post_type_lable" for="<?php echo esc_attr( $terms_data->term_id ); ?>">
+							<label class="post_type_lable"
+                                   for="<?php echo esc_attr( $terms_data->term_id ); ?>">
 								<input
 									name="emp_tags[]" 
 									type="checkbox"
@@ -224,7 +237,9 @@ function get_category_box() {
 				?>
 			</ul>
 			<div id="events_tags-adder" class="wp-hidden-children">
-				<a id="events_tags-add-toggle" href="javascript:void(0)" class="hide-if-no-js taxonomy-add-new-tags">
+				<a id="events_tags-add-toggle"
+                   href="javascript:void(0)"
+                   class="hide-if-no-js taxonomy-add-new-tags">
 				   + Add New Tag
 				</a>
 				<p id="events_tags-add" class="category-add wp-hidden-child">

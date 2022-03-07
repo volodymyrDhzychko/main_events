@@ -8,6 +8,8 @@ get_header();
 
 // $language_type = filter_input( INPUT_GET, 'lang', FILTER_SANITIZE_STRING );
 // $language_type = isset( $language_type ) && ! empty( $language_type ) ? $language_type : 'en';
+
+// TODO: a lot of unneeded "get_post_meta" calls. Better way is combine all events meta fields in one group and then call only 1 time get_post_meta($event_id, 'event_data', true ) and then use assoc array for getting separate values
 $current_is_rtl = dffmain_mlp_check_if_is_rtl();
 
 $event_id = filter_input( INPUT_COOKIE, 'dff_event_id', FILTER_SANITIZE_STRING );

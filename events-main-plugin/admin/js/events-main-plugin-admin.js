@@ -144,6 +144,8 @@ jQuery(document).ready(function () {
         }
     });
 
+    // TODO: need to remove duplicate call to selector.
+    //  Right way is creating const and then call them in right places
     $('body').on('click', '.upload_event_detail_image_button', function (e) {
         e.preventDefault();
 

@@ -246,6 +246,10 @@ class Events_Main_Plugin_Admin {
 
 		switch_to_blog($context->sourceSiteId());
 
+		// TODO: Super non-optimized code.. Each line is separate request tto DB only for one value..
+        // use get_post_meta( $context->sourcePostId() ) for getting the whole meta data in one time..
+        // if all meta can grouped in some key - it will be better too
+
 			$event_cost_name                  = get_post_meta( $context->sourcePostId(), 'event_cost_name', true );
 			$event_reminder_select_box        = get_post_meta( $context->sourcePostId(), 'event_reminder_select_box', true );
 			$event_date_select                = get_post_meta( $context->sourcePostId(), 'event_date_select', true );
@@ -264,6 +268,8 @@ class Events_Main_Plugin_Admin {
 
 		restore_current_blog();
 
+
+		// TODO: The same problem with optimization
 		update_post_meta($context->remotePostId(), 'event_cost_name', $event_cost_name);
 		update_post_meta($context->remotePostId(), 'event_reminder_select_box', $event_reminder_select_box);
 		update_post_meta($context->remotePostId(), 'event_date_select', $event_date_select);
@@ -1141,7 +1147,7 @@ class Events_Main_Plugin_Admin {
 			// Attendee meta data
 			update_post_meta( $post_id, 'event_attendee_limit_count', $event_attendee_limit_count );
 			update_post_meta( $post_id, 'event_registration_close_message', $event_registration_close_message );
-		} /**if ( !ms_is_switched() ) { */
+		} // if ( !ms_is_switched() )
 	}
 
 	/**
@@ -2105,8 +2111,10 @@ class Events_Main_Plugin_Admin {
 						// echo ("</pre>");
 						// wp_die();
 				add_post_meta( $post_id, 'event_email_history', $response_data );
-			}/**foreach ( $query_attendees->posts as $query_attendees_data ) { */
-		}/**if ( isset( $query_attendees->posts ) && ! empty( $query_attendees->posts ) ) { */
+			}
+			// foreach ( $query_attendees->posts as $query_attendees_data )
+		}
+		// if ( isset( $query_attendees->posts ) && ! empty( $query_attendees->posts ) )
 		?>
 		<table id="email_history" class="display nowrap" style="width:100%">
 			<thead>
@@ -2390,6 +2398,8 @@ class Events_Main_Plugin_Admin {
 
 						$events_arabic_event_reminder = str_replace( '{{a_event_details}}', $event_details_ar, $events_arabic_event_reminder );
 
+
+						// TODO: It's mush easy to create array with language pairs..
 						$events_arabic_event_reminder = str_replace( 'January', 'كانون الثاني', $events_arabic_event_reminder );
 						$events_arabic_event_reminder = str_replace( 'February', 'شهر فبراير', $events_arabic_event_reminder );
 						$events_arabic_event_reminder = str_replace( 'March'   , 'مارس', $events_arabic_event_reminder );

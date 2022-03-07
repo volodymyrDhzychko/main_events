@@ -44,9 +44,13 @@ class AddNewFieldModal extends Component {
     };
     camelCase = (str) => {
         return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
-            return 0 == index ? word.toLowerCase() : word.toUpperCase();
+            return 0 === index ? word.toLowerCase() : word.toUpperCase();
         }).replace(/\s+/g, '');
     };
+
+    // TODO: This function was written in spaghetti style.. It bad practice.
+    //  Try to rewrite it in functional style.
+    //  Follow this way you can use switch operator to call simple function inside each case operator..
 
     handleSaveNewField = (event) => {
         const {enLabelName, arLabelName, fieldType, require, multipleOption, validationType, option, enOptionValues, arOptionValues, enButtonLabel1, arButtonLabel1} = this.state;
@@ -85,7 +89,8 @@ class AddNewFieldModal extends Component {
                 } else {
                     this.setState({errorMsg: true});
                 }
-            } else if ('Text Area' === fieldType) {
+            }
+            else if ('Text Area' === fieldType) {
                 let newFieldObj = {
                     'en': {
                         'control': fieldType,
@@ -109,7 +114,8 @@ class AddNewFieldModal extends Component {
                     }
                 };
                 this.props.handleAddField(newFieldObj);
-            } else if ('Dropdown Select' === fieldType) {
+            }
+            else if ('Dropdown Select' === fieldType) {
                 if (0 < enOptionValues.length && 0 < arOptionValues.length ) {
                     let enValue = [];
                     let arValue = [];
@@ -163,7 +169,8 @@ class AddNewFieldModal extends Component {
                     this.setState({errorMsg: true});
                 }
 
-            } else if ('Radio' === fieldType) {
+            }
+            else if ('Radio' === fieldType) {
                 if (0 < enOptionValues.length && 0 < arOptionValues.length) {
                     let enValue = [];
                     let arValue = [];
@@ -210,7 +217,8 @@ class AddNewFieldModal extends Component {
                 } else {
                     this.setState({errorMsg: true});
                 }
-            } else if ('Checkbox' === fieldType ) {
+            }
+            else if ('Checkbox' === fieldType ) {
                 if (0 < enOptionValues.length && 0 < arOptionValues.length) {
                     let enValue = [];
                     let arValue = [];
@@ -257,7 +265,8 @@ class AddNewFieldModal extends Component {
                 } else {
                     this.setState({errorMsg: true});
                 }
-            } else if ('File Upload' === fieldType) {
+            }
+            else if ('File Upload' === fieldType) {
                 const uploadOptions = this.state.uploadOptions[0];
                 let allowedOption = [];
                 for (let key in uploadOptions) {
@@ -353,7 +362,7 @@ class AddNewFieldModal extends Component {
                 <div className="modal-wrap">
                     <div className="modal-inner">
                         <span className="dashicons dashicons-no-alt main-clearbtn"
-                              onClick={this.handleModalClose}></span>
+                              onClick={this.handleModalClose} />
                         <div className="add-field-wrap default-checkbox">
                             <div className="field-label-wrap">
                                 <span>Required</span>
@@ -480,14 +489,14 @@ class AddNewFieldModal extends Component {
                                                             </label>
                                                             <span
                                                                 className="dashicons dashicons-no-alt remove-option-text"
-                                                                index={index} onClick={this.deleteOption}></span>
+                                                                index={index} onClick={this.deleteOption} />
                                                         </div>
                                                     </Fragment>
                                                 ))
                                             }
                                         </div>
                                         <div className="add-new-option-text" onClick={this.addNewOptionHandle}>
-                                            <span className="dashicons dashicons-plus-alt2"></span>
+                                            <span className="dashicons dashicons-plus-alt2" />
                                             <span>Add Option</span>
                                         </div>
                                     </div>
@@ -532,14 +541,14 @@ class AddNewFieldModal extends Component {
                                                             </label>
                                                             <span
                                                                 className="dashicons dashicons-no-alt remove-option-text"
-                                                                index={index} onClick={this.deleteOption}></span>
+                                                                index={index} onClick={this.deleteOption} />
                                                         </div>
                                                     </Fragment>
                                                 ))
                                             }
                                         </div>
                                         <div className="add-new-option-text" onClick={this.addNewOptionHandle}>
-                                            <span className="dashicons dashicons-plus-alt2"></span>
+                                            <span className="dashicons dashicons-plus-alt2" />
                                             <span>Add Option</span>
                                         </div>
                                     </div>
@@ -584,14 +593,14 @@ class AddNewFieldModal extends Component {
                                                             </label>
                                                             <span
                                                                 className="dashicons dashicons-no-alt remove-option-text"
-                                                                index={index} onClick={this.deleteOption}></span>
+                                                                index={index} onClick={this.deleteOption} />
                                                         </div>
                                                     </Fragment>
                                                 ))
                                             }
                                         </div>
                                         <div className="add-new-option-text" onClick={this.addNewOptionHandle}>
-                                            <span className="dashicons dashicons-plus-alt2"></span>
+                                            <span className="dashicons dashicons-plus-alt2" />
                                             <span>Add Option</span>
                                         </div>
                                     </div>
@@ -602,49 +611,62 @@ class AddNewFieldModal extends Component {
                         {'File Upload' === fieldType &&
                         <div className="validation-field">
                             <div className="add-field-wrap">
-                                <div className="field-label-wrap"><span>Upload Options<sup className="medatory"> *</sup></span>
+                                <div className="field-label-wrap">
+                                    <span>Upload Options<sup className="medatory"> *</sup></span>
                                 </div>
                                 <div className="field-content-wrap">
                                     <div className="multiple-check-option">
                                         <div className="check-option-wrap">
                                             <label htmlFor="pdf">
-                                                <input name="uploadOption[]" checked={uploadOptions[0].pdf}
-                                                       type="checkbox" id="pdf"
+                                                <input name="uploadOption[]"
+                                                       checked={uploadOptions[0].pdf}
+                                                       type="checkbox"
+                                                       id="pdf"
                                                        onChange={this.handleChangeUploadOption}/>
                                             </label> .pdf
                                         </div>
                                         <div className="check-option-wrap">
                                             <label htmlFor="doc">
-                                                <input name="uploadOption[]" checked={uploadOptions[0].doc}
-                                                       type="checkbox" id="doc"
+                                                <input name="uploadOption[]"
+                                                       checked={uploadOptions[0].doc}
+                                                       type="checkbox"
+                                                       id="doc"
                                                        onChange={this.handleChangeUploadOption}/>
                                             </label> .doc
                                         </div>
                                         <div className="check-option-wrap">
                                             <label htmlFor="png">
-                                                <input name="uploadOption[]" checked={uploadOptions[0].png}
-                                                       type="checkbox" id="png"
+                                                <input name="uploadOption[]"
+                                                       checked={uploadOptions[0].png}
+                                                       type="checkbox"
+                                                       id="png"
                                                        onChange={this.handleChangeUploadOption}/>
                                             </label> .png
                                         </div>
                                         <div className="check-option-wrap">
                                             <label htmlFor="xlsx">
-                                                <input name="uploadOption[]" checked={uploadOptions[0].xlsx}
-                                                       type="checkbox" id="xlsx"
+                                                <input name="uploadOption[]"
+                                                       checked={uploadOptions[0].xlsx}
+                                                       type="checkbox"
+                                                       id="xlsx"
                                                        onChange={this.handleChangeUploadOption}/>
                                             </label> .xlsx
                                         </div>
                                         <div className="check-option-wrap">
                                             <label htmlFor="pptx">
-                                                <input name="uploadOption[]" checked={uploadOptions[0].pptx}
-                                                       type="checkbox" id="pptx"
+                                                <input name="uploadOption[]"
+                                                       checked={uploadOptions[0].pptx}
+                                                       type="checkbox"
+                                                       id="pptx"
                                                        onChange={this.handleChangeUploadOption}/>
                                             </label> .pptx
                                         </div>
                                         <div className="check-option-wrap">
                                             <label htmlFor="jpg">
-                                                <input name="uploadOption[]" checked={uploadOptions[0].jpg}
-                                                       type="checkbox" id="jpg"
+                                                <input name="uploadOption[]"
+                                                       checked={uploadOptions[0].jpg}
+                                                       type="checkbox"
+                                                       id="jpg"
                                                        onChange={this.handleChangeUploadOption}/>
                                             </label> .jpg
                                         </div>
@@ -690,9 +712,13 @@ class AddNewFieldModal extends Component {
                         }
                         <div className="button-wrapper add-field-wrap">
                             <div className="field-content-wrap">
-                                <input type="button" value="Save" className="button button-primary"
+                                <input type="button"
+                                       value="Save"
+                                       className="button button-primary"
                                        onClick={this.handleSaveNewField}/>
-                                <input type="button" value="Cancel" className="button button-primary"
+                                <input type="button"
+                                       value="Cancel"
+                                       className="button button-primary"
                                        onClick={this.handleModalClose}/>
                             </div>
                             {this.state.errorMsg &&
