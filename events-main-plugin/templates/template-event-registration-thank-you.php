@@ -5,15 +5,9 @@
 
 get_header();
 
-
-// $language_type = filter_input( INPUT_GET, 'lang', FILTER_SANITIZE_STRING );
-// $language_type = isset( $language_type ) && ! empty( $language_type ) ? $language_type : 'en';
-
-// TODO: a lot of unneeded "get_post_meta" calls. Better way is combine all events meta fields in one group and then call only 1 time get_post_meta($event_id, 'event_data', true ) and then use assoc array for getting separate values
 $current_is_rtl = dffmain_mlp_check_if_is_rtl();
 
-$event_id = filter_input( INPUT_COOKIE, 'dff_event_id', FILTER_SANITIZE_STRING );
-$event_id = isset( $event_id ) ? $event_id : '';
+$event_id = dffmain_is_var_empty( filter_input( INPUT_COOKIE, 'dff_event_id', FILTER_SANITIZE_STRING ) );
 
 $featured_image_id = get_post_thumbnail_id( $event_id );
 $image_title       = get_the_title( $featured_image_id );
@@ -24,20 +18,22 @@ if ( !isset( $image_alt ) || empty( $image_alt ) ) {
     $image_alt = $image_title;
 }
 
+$post_metas = get_post_meta( $event_id );
+
 $image_size       = 'full';
-$event_detail_img = get_post_meta( $event_id, 'event_detail_img', true );
+$event_detail_img = $post_metas['event_detail_img'][0];
 $image_attributes = wp_get_attachment_image_src( $event_detail_img, $image_size );
 
-$event_date_select = get_post_meta( $event_id, 'event_date_select', true );
+$event_date_select = $post_metas['event_date_select'][0];
 $event_date_select = ( ! empty( $event_date_select ) ) ? date( 'F d, Y', strtotime( $event_date_select ) ) : '-';
 
-$event_end_date_select = get_post_meta( $event_id, 'event_end_date_select', true );
+$event_end_date_select = $post_metas['event_end_date_select'][0];
 $event_end_date_select = ( ! empty( $event_end_date_select ) ) ? date( 'F d, Y', strtotime( $event_end_date_select ) ) : '';
 
-$event_time_start_select = get_post_meta( $event_id, 'event_time_start_select', true );
-$event_time_end_select   = get_post_meta( $event_id, 'event_time_end_select', true );
+$event_time_start_select = $post_metas['event_time_start_select'][0];
+$event_time_end_select   = $post_metas['event_time_end_select'][0];
 
-$event_google_map_link = get_post_meta( $event_id, 'event_google_map_input', true );
+$event_google_map_link = $post_metas['event_google_map_input'][0];
 
 $event_start_time = new DateTime( "$event_time_start_select" );
 $event_end_time   = new DateTime( "$event_time_end_select" );
@@ -48,8 +44,8 @@ if ( $current_is_rtl ) {
 
 	$thank_you_message      = 'شكرا لتسجيلك!';
 	$thank_you_subtitle     = 'أنت تحضر:';
-	$heading                = get_post_meta( $event_id, 'dffmain_post_title', true );
-	$events_arabic_overview = get_post_meta( $event_id, 'events_overview', true );
+	$heading                = $post_metas['dffmain_post_title'][0];
+	$events_arabic_overview = $post_metas['events_overview'][0];
 
 	if( '' === $heading || '' === $events_arabic_overview ) {
 
@@ -71,7 +67,7 @@ if ( $current_is_rtl ) {
 
 	$paragraph  = 'ستتلقى بريداً إلكترونياً يحتوي على مزيد من المعلومات عن الفعالية. في حال لم تستلم أي رسالة الكترونية منّا خلال الدقائق القليلة القادمة، يرجى التحقق من ملف البريد غير الهام. يُرجى التأكد من إدراج عنوان البريد الإلكتروني <a href="mailto:no-reply@dubaifuture.ae"><b>no-reply@dubaifuture.ae</b></a> في القوائم المعتمدة.)';
 	$wrap_class = 'ar-wrap';
-	$location   = get_post_meta( $event_id, 'dffmain_event_location', true );
+	$location   = $post_metas['dffmain_event_location'][0];
 	$detail_url = get_permalink( $event_id );
 
 	$months = [
@@ -121,9 +117,9 @@ if ( $current_is_rtl ) {
     $paragraph = 'You will be receiving an email shortly with more information about the event. If you do not receive the email within the next few minutes, please check your junk folder. (Please ensure that the email address <a href="mailto:no-reply@dubaifuture.ae"><b>no-reply@dubaifuture.ae</b></a> is whitelisted.)';
 	$thank_you_message  = 'Thank you for registering!';
 	$thank_you_subtitle = 'You are attending:';
-	$heading            = get_post_meta( $event_id, 'dffmain_post_title', true );
+	$heading            = $post_metas['dffmain_post_title'][0];
 	$wrap_class         = 'en-wrap';
-	$location           = get_post_meta( $event_id, 'dffmain_event_location', true );
+	$location           = $post_metas['dffmain_event_location'][0];
 	$detail_url         = get_permalink( $event_id );
 
 	$right_date     = 'Date';
@@ -234,7 +230,7 @@ if ( $current_is_rtl ) {
                             <?php
                         }
 
-                        $google_embed_maps_code = get_post_meta( $event_id, 'google_embed_maps_code', true );
+                        $google_embed_maps_code = $post_metas['google_embed_maps_code'][0];
                         if ( isset( $google_embed_maps_code ) && ! empty( $google_embed_maps_code ) ) {
                             $allow_tags             = array(
                                 'iframe' => array(

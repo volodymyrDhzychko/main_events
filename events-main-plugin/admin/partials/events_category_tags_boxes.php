@@ -142,52 +142,55 @@ function get_category_box() {
 					<select class="postform" name="newevents_categories_parent" id="newevents_categories_parent">
 						<option value="-1">— Parent Category —</option>
 						<?php
-						foreach ( $terms as $terms_data ) {
-							$cat_id = $terms_data->term_id;
-							?>
-							<option class="level-0" value="<?php echo esc_attr( $cat_id ); ?>">
-								<?php echo esc_html( $terms_data->name ); ?>
-							</option>
-							<?php
-							$get_children_cats = array(
-								'taxonomy'    => 'events_categories',
-								'orderby'    => 'term_id',
-								'order'      => 'ASC',
-								'parent'     => $cat_id,
-								'hide_empty' => 0,
-							);
-							$child_cats = get_terms( $get_children_cats );
-							if ( isset( $child_cats ) && ! empty( $child_cats ) ) {
-								foreach ( $child_cats as $child_cats_data ) {
-									$child_catid = $child_cats_data->term_id;
-									?>
-									<option class="level-1" value="<?php echo esc_attr( $child_catid ); ?>">
-										&nbsp;&nbsp;&nbsp;<?php echo esc_html( $child_cats_data->name ); ?>
-									</option>
-									<?php
-									$get_super_children_cats = array(
-										'taxonomy'    => 'events_categories',
-										'orderby'    => 'term_id',
-										'order'      => 'ASC',
-										'parent'     => $child_catid,
-										'hide_empty' => 0,
-									);
-									$super_child_cats = get_terms( $get_super_children_cats );
-									if ( isset( $super_child_cats ) && ! empty( $super_child_cats ) ) {
-										foreach ( $super_child_cats as $super_child_cats_data ) {
-											?>
-											<option class="level-2" value="<?php echo esc_attr( $super_child_cats_data->term_id ); ?>">
-												&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo esc_attr( $super_child_cats_data->name ); ?>
-											</option>
-											<?php
+						if ( isset( $terms ) && ! empty( $terms ) ) {
+							foreach ( $terms as $terms_data ) {
+								$cat_id = $terms_data->term_id;
+								?>
+								<option class="level-0" value="<?php echo esc_attr( $cat_id ); ?>">
+									<?php echo esc_html( $terms_data->name ); ?>
+								</option>
+								<?php
+								$get_children_cats = array(
+									'taxonomy'    => 'events_categories',
+									'orderby'    => 'term_id',
+									'order'      => 'ASC',
+									'parent'     => $cat_id,
+									'hide_empty' => 0,
+								);
+								$child_cats = get_terms( $get_children_cats );
+								if ( isset( $child_cats ) && ! empty( $child_cats ) ) {
+									foreach ( $child_cats as $child_cats_data ) {
+										$child_catid = $child_cats_data->term_id;
+										?>
+										<option class="level-1" value="<?php echo esc_attr( $child_catid ); ?>">
+											&nbsp;&nbsp;&nbsp;<?php echo esc_html( $child_cats_data->name ); ?>
+										</option>
+										<?php
+										$get_super_children_cats = array(
+											'taxonomy'    => 'events_categories',
+											'orderby'    => 'term_id',
+											'order'      => 'ASC',
+											'parent'     => $child_catid,
+											'hide_empty' => 0,
+										);
+										$super_child_cats = get_terms( $get_super_children_cats );
+										if ( isset( $super_child_cats ) && ! empty( $super_child_cats ) ) {
+											foreach ( $super_child_cats as $super_child_cats_data ) {
+												?>
+												<option class="level-2" value="<?php echo esc_attr( $super_child_cats_data->term_id ); ?>">
+													&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo esc_attr( $super_child_cats_data->name ); ?>
+												</option>
+												<?php
+											}
 										}
 									}
+									// foreach ( $child_cats as $child_cats_data )
 								}
-								// foreach ( $child_cats as $child_cats_data )
+								// if ( isset( $child_cats ) && ! empty( $child_cats ) )
 							}
-							// if ( isset( $child_cats ) && ! empty( $child_cats ) )
+							// foreach ( $terms as $terms_data )
 						}
-						// foreach ( $terms as $terms_data )
+						// if ( isset( $terms ) && ! empty( $terms ) )
 						?>
 					</select>
 					<input 

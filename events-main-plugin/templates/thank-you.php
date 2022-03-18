@@ -106,33 +106,37 @@ if ( $_POST ) {
 
 	if ( ! empty( $attendee_arr ) ) {
 		$attendee_fullname = $attendee_arr['FirstName'] . ' ' . $attendee_arr['LastName'];
-		$my_post           = array(
+		$event_name_internal = get_the_title( $event_id );
+
+		$meta_values = [
+			'attendee_data' => $attendee_arr,
+			'event_name'    => $event_name_internal,
+			'email'         => $email,
+			'company_name'  => $company_name,
+			'checkin'       => $checkin,
+			'language_type' => $language_type,
+			'future_id'     => $future_id,
+			'event_id'      => $event_id
+		];
+
+		$my_post           = [
 			'post_title'  => wp_strip_all_tags( $attendee_fullname ),
 			'post_status' => 'publish',
 			'post_type'   => 'attendees',
-		);
-		$post_id           = wp_insert_post( $my_post );
+			'meta_input'=> $meta_values
+		];
+		$post_id = wp_insert_post( $my_post );
+
 		if ( $post_id ) {
 
 			// Registration platform.
-			if ( 'yes' === $api_registration ) {
+			if ( 'yes' === $api_registration ) { 
 				add_post_meta( $post_id, 'registration_platform', 'mobile_app' );
 				$attendee_arr['registration_platform'] = 'Mobile App';
 			} else {
 				add_post_meta( $post_id, 'registration_platform', 'web' );
 				$attendee_arr['registration_platform'] = 'Web';
-			}
-			
-			$event_name_internal = get_the_title( $event_id );
-	
-			update_post_meta( $post_id, 'attendee_data', $attendee_arr );
-			update_post_meta( $post_id, 'event_name', $event_name_internal );
-			update_post_meta( $post_id, 'email', $email );
-			update_post_meta( $post_id, 'company_name', $company_name );
-			update_post_meta( $post_id, 'checkin', $checkin );
-			update_post_meta( $post_id, 'language_type', $language_type );
-			update_post_meta( $post_id, 'future_id', $future_id );
-			update_post_meta( $post_id, 'event_id', $event_id );
+			}		
 		}
 	}
 
@@ -146,10 +150,12 @@ if ( $_POST ) {
 
 	$url = 'https://api.sendgrid.com/';
 
-	$event_date              = get_post_meta( $event_id, 'event_date_select', true );
-	$event_end_date          = get_post_meta( $event_id, 'event_end_date_select', true );
-	$event_time_start_select = get_post_meta( $event_id, 'event_time_start_select', true );
-	$event_time_end_select   = get_post_meta( $event_id, 'event_time_end_select', true );
+	$post_metas = get_post_meta( $event_id );
+
+	$event_date              = $post_metas['event_date_select'][0];
+	$event_end_date          = $post_metas['event_end_date_select'][0];
+	$event_time_start_select = $post_metas['event_time_start_select'][0];
+	$event_time_end_select   = $post_metas['event_time_end_select'][0];
 
 
 	$event_date       = new DateTime( "$event_date" );
@@ -178,18 +184,18 @@ if ( $_POST ) {
 	$event_time_end_select_email = $event_time_end_select->format( 'h:i A' );
 	$event_time_end_select       = $event_time_end_select->format( 'His' );
 
-	$event_google_map_input = get_post_meta( $event_id, 'event_google_map_input', true );
+	$event_google_map_input = $post_metas['event_google_map_input'][0];
 
 	$event_time_frame       = $event_time_start_select . ' - ' . $event_time_end_select;
 	$event_time_frame_email = $event_time_start_select_email . ' - ' . $event_time_end_select_email;
 
-	$events_overview = get_post_meta( $event_id, 'events_overview', true );
-	$events_agenda   = get_post_meta( $event_id, 'dffmain_events_agenda', true );
+	$events_overview = $post_metas['events_overview'][0];
+	$events_agenda   = $post_metas['dffmain_events_agenda'][0];
     $event_details   = wpautop( $events_overview ) . '<br><br>' . wpautop( $events_agenda  );
 
-    $dffmain_post_title        = get_post_meta( $event_id, 'dffmain_post_title', true );
-    $dffmain_event_location    = get_post_meta( $event_id, 'dffmain_event_location', true );
-	$event_special_instruction = get_post_meta( $event_id, 'event_special_instruction', true );
+    $dffmain_post_title        = $post_metas['dffmain_post_title'][0];
+    $dffmain_event_location    = $post_metas['dffmain_event_location'][0];
+	$event_special_instruction = $post_metas['event_special_instruction'][0];
 
 	$subject_thank_you_arr = main_site_get_option( 'subject_thank_you' );
 	$content_thank_you_arr = main_site_get_option( 'events_content_thank_you_after_registration' );
@@ -330,31 +336,32 @@ if ( $_POST ) {
 
 		}
 
-		// set correct content-type-header
-		header( 'Content-type: text/calendar; charset=utf-8' );
-		header( 'Content-Disposition: inline; filename=event.ics' );
+		/**TODO - do we need it - !!! stops subsite attendee registration !!! */
+		// // set correct content-type-header
+		// header( 'Content-type: text/calendar; charset=utf-8' );
+		// header( 'Content-Disposition: inline; filename=event.ics' );
 
-		$params_ar = array(
-			'to'               => $email,
-			'toname'           => $attendee_arr['FirstName'],
-			'from'             => $send_grid_from_email,
-			'fromname'         => $send_grid_from_name,
-			'subject'          => $subject_thank_you,
-			'html'             => $email_content,
-			'x-smtpapi'        => wp_json_encode( $json_string_ar ),
-			'files[event.ics]' => $iCal,
-		);
+		// $params_ar = array(
+		// 	'to'               => $email,
+		// 	'toname'           => $attendee_arr['FirstName'],
+		// 	'from'             => $send_grid_from_email,
+		// 	'fromname'         => $send_grid_from_name,
+		// 	'subject'          => $subject_thank_you,
+		// 	'html'             => $email_content,
+		// 	'x-smtpapi'        => wp_json_encode( $json_string_ar ),
+		// 	'files[event.ics]' => $iCal,
+		// );
 
 		$request = $url . 'api/mail.send.json';
-		
+
 		if ( 'ar' === $language_type ) {
 
             $email_content = $content_thank_you_arr['Arabic'];
 
             $event_subject_thank_you = $subject_thank_you_arr['Arabic'];
 
-			$event_post_title = get_post_meta( $event_id, 'dffmain_post_title', true );
-			$event_location   = get_post_meta( $event_id, 'dffmain_event_location', true );
+			$event_post_title = $post_metas['dffmain_post_title'][0];
+			$event_location   = $post_metas['dffmain_event_location'][0];
 			$event_details    = wpautop( $events_overview ) . '<br><br>' . wpautop( $events_agenda  );
 
 		
@@ -374,7 +381,7 @@ if ( $_POST ) {
 
 			$event_subject_thank_you = str_replace( '{{a_eventname}}', $event_post_title, $event_subject_thank_you );
 
-			$subject_thank_you = get_option( 'arabic_mail_subject_thank_you' );
+			// $subject_thank_you = get_option( 'arabic_mail_subject_thank_you' ); TODO - need?
 
 			$in_arabic = true;
 			$dear_text = 'السيد';
@@ -386,10 +393,10 @@ if ( $_POST ) {
 
             $event_subject_thank_you = $subject_thank_you_arr['English'];
 
-			$event_post_title = get_post_meta( $event_id, 'dffmain_post_title', true );
+			$event_post_title = $post_metas['dffmain_post_title'][0];
 			$event_post_title = str_replace("&#039;", "'", $event_post_title);
 
-			$event_location = get_post_meta( $event_id, 'dffmain_event_location', true );
+			$event_location = $post_metas['dffmain_event_location'][0];
 			$event_details  = $events_overview . '<br><br>' . $events_agenda;
 
 
@@ -425,20 +432,41 @@ if ( $_POST ) {
 		$email_content = str_replace( '{{time}}', $event_time_frame_email, $email_content );
 
 		if ( 'ar' === $language_type ) {
-			$email_content = str_replace( 'January', 'كانون الثاني', $email_content );
-			$email_content = str_replace( 'February', 'شهر فبراير', $email_content );
-			$email_content = str_replace( 'March'   , 'مارس', $email_content );
-			$email_content = str_replace( 'April'   , 'أبريل', $email_content );
-			$email_content = str_replace( 'May'     , 'مايو', $email_content );
-			$email_content = str_replace( 'June'    , 'يونيو', $email_content );
-			$email_content = str_replace( 'July'    , 'يوليو', $email_content );
-			$email_content = str_replace( 'August'  , 'أغسطس', $email_content );
-			$email_content = str_replace( 'September', 'سبتمبر', $email_content );
-			$email_content = str_replace('October' , 'اكتوبر', $email_content );
-			$email_content = str_replace( 'November', 'شهر نوفمبر', $email_content );
-			$email_content = str_replace( 'December', 'ديسمبر', $email_content );
-			$email_content = str_replace( 'AM', 'صباحًا', $email_content );
-			$email_content = str_replace( 'PM', 'مساءً', $email_content );
+
+			$english_time_names = [
+				'January',
+				'February',
+				'March',
+				'April',
+				'May',
+				'June',
+				'July',
+				'August',
+				'September',
+				'October',
+				'November',
+				'December',
+				'AM',
+				'PM'
+			];
+			$arabic_time_names = [
+				'كانون الثاني', 
+				'شهر فبراير', 
+				'مارس', 
+				'أبريل', 
+				'مايو', 
+				'يونيو', 
+				'يوليو', 
+				'أغسطس', 
+				'سبتمبر', 
+				'اكتوبر', 
+				'شهر نوفمبر', 
+				'ديسمبر', 
+				'صباحًا', 
+				'مساءً', 
+			];
+
+			$email_content = str_replace( $english_time_names, $arabic_time_names, $email_content );
 		}
 		
 		$event_subject_thank_you = str_replace( "'", "'", $event_subject_thank_you );
@@ -475,7 +503,7 @@ if ( $_POST ) {
 					),
 				),
 			);
-			
+
 		} else {
 
 			$json_string = (object) array(
@@ -505,9 +533,9 @@ if ( $_POST ) {
 			);
 
 		}
-		/** TODO $response_eng - do we need this variable? */
+
 		$request      = $url . 'v3/mail/send';
-		$response_eng = wp_remote_post( 
+		$response_email = wp_remote_post( 
 			$request, array(
 				'method'  => 'POST',
 				'headers' => array(
@@ -558,7 +586,7 @@ if ( $_POST ) {
 		$response = wp_remote_post( 'https://' . substr( $api_key, strpos( $api_key, '-' ) + 1 ) . '.api.mailchimp.com/3.0/lists/' . $list_id . '/members/' . md5( strtolower( $email ) ), $args );
 
 	}
-/**TODO cookie + redirect */
+
 	if ( 'yes' !== $api_registration ) {
 		$subscribe_data = array(
 			'event_id'    => $event_id,
@@ -566,7 +594,7 @@ if ( $_POST ) {
 		);
 		setcookie( 'subscriber_detail', wp_json_encode( $subscribe_data, JSON_UNESCAPED_SLASHES ), time() + ( 86400 * 30 ), '/' );
 		setcookie( 'dff_event_id', $event_id, time() + ( 86400 * 30 ), '/' );
-		header( 'location:' . get_bloginfo( 'url' ) . '/event-registration-thank-you' );
+		header( 'location:' . get_bloginfo( 'url' ) . '/event-registration-thank-you' ); 
 	}
 
 }

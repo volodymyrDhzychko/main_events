@@ -13,20 +13,12 @@ $server_http_host = filter_input( INPUT_SERVER, 'HTTP_HOST', FILTER_SANITIZE_STR
 $server_req_url   = filter_input( INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_STRING );
 
 $event_link = ( isset( $server_https ) && $server_https === 'on' ? 'https' : 'http' ) . "://$server_http_host$server_req_url";
+$event_id   = $post->ID;
+$language   = get_current_language_name( true );
 
-$event_id = filter_input( INPUT_GET, 'eid', FILTER_SANITIZE_NUMBER_INT );
-$event_id = isset( $event_id ) ? $event_id : $post->ID;
-/**TODO if we need eid? */
-$event_id = $post->ID;
-
-$language = filter_input( INPUT_GET, 'lang', FILTER_SANITIZE_STRING );
-$language = isset( $language ) ? $language : 'en';
-/** TODO check for language */
-$language = 'en';
-
+/** TODO set checkin */
 $checkin = filter_input( INPUT_GET, 'checkin', FILTER_SANITIZE_STRING );
-$checkin = isset( $checkin ) ? $checkin : 'false';
-
+$checkin = isset( $checkin ) ? $checkin : 'false'; 
 
 $settings_array_get          = main_site_get_option( 'events_general_settings' );
 $events_general_settings_get = json_decode( $settings_array_get );
@@ -35,8 +27,9 @@ $events_general_settings_get = (array) $events_general_settings_get;
 $site_key   = isset( $events_general_settings_get['site_key'] ) && ! empty( $events_general_settings_get['site_key'] ) ? $events_general_settings_get['site_key'] : 'hardcode_recapcha_site_key';
 $secret_key = isset( $events_general_settings_get['secret_key'] ) && ! empty( $events_general_settings_get['secret_key'] ) ? $events_general_settings_get['secret_key'] : 'hardcode_recapcha_secret_key';
 
+$meta = get_post_meta( $event_id );
 
-$event_attendee_limit_count = get_post_meta( $event_id, 'event_attendee_limit_count', true );
+$event_attendee_limit_count = $meta['event_attendee_limit_count'][0];
 if ( isset( $event_attendee_limit_count ) && ! empty( $event_attendee_limit_count ) ) {
 	$args                     = array(
 		'post_type'  => 'attendees',
@@ -50,6 +43,7 @@ if ( isset( $event_attendee_limit_count ) && ! empty( $event_attendee_limit_coun
 	$query                    = new WP_Query( $args );
 	$found_posts              = $query->found_posts ? $query->found_posts : 0;
 	$remaining_attendee_count = (int) $event_attendee_limit_count - (int) $found_posts;
+	wp_reset_postdata();
 }
 
 if ( isset( $language ) && ! empty( $language ) ) {
@@ -63,23 +57,23 @@ if ( isset( $language ) && ! empty( $language ) ) {
 	$event_end_time        = '';
 	$emp_tags              = '';
 	$event_details_heading = '';
-	$meta                  = get_post_meta( $event_id );
 
+	$field_preference         = dffmain_is_var_empty( $meta['_wp_field_preference'][0] );
+	$field_preference         = maybe_unserialize( $field_preference );
+	$registration_template_id = dffmain_is_var_empty(  $meta['_wp_template_id'][0] );
+	$event_security_code      = dffmain_is_var_empty(  $meta['event_security_code'][0] );
+	$security_code_checkbox   = dffmain_is_var_empty( $meta['security_code_checkbox'][0] );
+	$event_google_map_link    = dffmain_is_var_empty( $meta['event_google_map_input'][0] );
+	$event_end_date           = dffmain_is_var_empty( $meta['event_end_date_select'][0] );
 
 	$event_date               = isset( $meta['event_date_select'][0] ) ? $meta['event_date_select'][0] : '-';
 	$event_all_date           = isset( $meta['event_date_select'][0] ) ? $meta['event_date_select'][0] : '-';
-	$event_end_date           = isset( $meta['event_end_date_select'][0] ) ? $meta['event_end_date_select'][0] : '';
 	$event_start_time         = isset( $meta['event_time_start_select'][0] ) ? $meta['event_time_start_select'][0] : '-';
 	$event_end_time           = isset( $meta['event_time_end_select'][0] ) ? $meta['event_time_end_select'][0] : '-';
 	$event_cost               = isset( $meta['event_cost_name'][0] ) ? $meta['event_cost_name'][0] : '-';
-	$event_google_map_link    = isset( $meta['event_google_map_input'][0] ) ? $meta['event_google_map_input'][0] : '';
 	$event_detail_img         = isset( $meta['event_detail_img'][0] ) ? $meta['event_detail_img'][0] : '-';
-	$field_preference         = isset( $meta['_wp_field_preference'][0] ) ? $meta['_wp_field_preference'][0] : '';
-	$registration_template_id = isset( $meta['_wp_template_id'][0] ) ? $meta['_wp_template_id'][0] : '';
-	$event_security_code      = isset( $meta['event_security_code'][0] ) ? $meta['event_security_code'][0] : '';
-	$security_code_checkbox   = isset( $meta['security_code_checkbox'][0] ) ? $meta['security_code_checkbox'][0] : '';
+
 	$registration_form_data   = get_post_meta( $registration_template_id, '_registration_form_data', true );
-	$field_preference         = get_post_meta( $event_id, '_wp_field_preference', true );
 
 	if( isset( $event_end_date ) && !empty( $event_end_date ) ) {
 		$event_all_date = $event_end_date;
@@ -169,17 +163,18 @@ if ( isset( $language ) && ! empty( $language ) ) {
 	$auth_details_array[2] = isset( $_COOKIE['auth_email'] ) ? $_COOKIE['auth_email'] : "";
 
 	$field_html = '';
+
 	if ( ! empty( $registration_form_data ) && isset( $registration_form_data ) ) {
 		foreach ( $registration_form_data as $key => $item ) {
 
 			if ( !$current_is_rtl ) {
 				$field_arr  = $item['en'];
 				$class_name = ' en-field';
-				$name       = $field_arr['id'];
+				$name       = substr_replace( $field_arr['id'], 'en', 0, 2 );
 			} else {
 				$field_arr  = $item['ar'];
 				$class_name = ' ar-field';
-				$name       = substr_replace( $field_arr['id'], 'en', 0, 2 );
+				$name       = substr_replace( $field_arr['id'], 'ar', 0, 2 );
 			}
 
 			if ( $field_arr['required'] ) {
@@ -368,8 +363,7 @@ if ( isset( $language ) && ! empty( $language ) ) {
         ';
 	}
 
-
-
+/**TODO enable captcha */
 	// $field_html  .= '<div class="field-wrap google-captcha required">
     //                     <div class="field-container">
     //                         <div class="captcha-field">
@@ -680,13 +674,13 @@ if ( isset( $language ) && ! empty( $language ) ) {
 													<div class="event_registration_form_title_wrap">
 														<h4 id="event_registration_form"><?php echo esc_html( $registration_form ); ?></h4>
 														<?php 
-															//if( 'true' !== $checkin ) {
+															// if( 'true' !== $checkin ) {
 																?>
 																<!-- <div class="button-wrap arabic-connect-id">
-																	<button id="login-button" onclick="return false"><?php //echo esc_html( 'سجل مع الهوية المستقبلية' ); ?></button>
+																	<button id="login-button" onclick="return false"><?php // echo esc_html( 'سجل مع الهوية المستقبلية' ); ?></button>
 																</div> -->
 																<?php
-															//}
+															// }
 														?>
 													</div>												
 													<form 
@@ -830,72 +824,71 @@ if ( isset( $language ) && ! empty( $language ) ) {
 
 										if ( ! empty( $registration_form_data ) ) {
 											?>
-												<div class="admin-front-register-form">
-													<div class="event_registration_form_title_wrap">
-														<h4 id="event_registration_form">
-															<?php echo esc_html( $registration_form ); ?>
-														</h4>
-														<?php 
-															/** TODO check in */
-															//if( 'true' !== $checkin ) {
-																?>
-																<!-- <div class="button-wrap">
-																	<button id="login-button" onclick="return false"><?php //echo esc_html( 'Register with FUTURE ID' ); ?></button>
-																</div> -->
-																<?php
-															//}
-														?>
-													</div>
-													<form 
-														class="attendee-form" 
-														id="attendee-form"
-														action="<?php echo plugins_url( 'thank-you.php', __FILE__ ); ?>"
-														method="post" 
-														enctype="multipart/form-data"
-													>
-														<div class="registration-template">
-															<div class="form-field-wrapper">
-																<?php echo wp_kses( $field_html, $allowed_tags ); ?>
-															</div>
-															<div class="hidden-fields">
-																<input 
-																	type="hidden" 
-																	class="event_title" 
-																	name="event_title"
-																	value="<?php echo get_the_title( $event_id ); ?>"
-																>
-																<input 
-																	type="hidden" 
-																	class="event_id" 
-																	name="event_id"
-																	value="<?php echo esc_attr( $event_id ); ?>"
-																>
-																<input 
-																	type="hidden" 
-																	class="language_type" 
-																	name="language_type"
-																	value="<?php echo esc_attr( $language ); ?>"
-																>
-																<input 
-																	type="hidden" 
-																	class="scode" 
-																	name="scode"
-																	value="<?php echo esc_attr( $event_security_code ); ?>"
-																>
-																<input 
-																	type="hidden" 
-																	class="checkin" 
-																	name="checkin"
-																	value="<?php echo esc_attr( $checkin ); ?>"
-																>
-															</div>
-															<br>
-															<div class="button-wrap">
-																<button class="button button-primary register"><?php echo esc_html( $register ); ?></button>
-															</div>
-														</div>
-													</form>
+											<div class="admin-front-register-form">
+												<div class="event_registration_form_title_wrap">
+													<h4 id="event_registration_form">
+														<?php echo esc_html( $registration_form ); ?>
+													</h4>
+													<?php 
+														// if( 'true' !== $checkin ) {
+															?>
+															<!-- <div class="button-wrap">
+																<button id="login-button" onclick="return false"><?php // echo esc_html( 'Register with FUTURE ID' ); ?></button>
+															</div> -->
+															<?php
+														// }
+													?>
 												</div>
+												<form 
+													class="attendee-form" 
+													id="attendee-form"
+													action="<?php echo plugins_url( 'thank-you.php', __FILE__ ); ?>"
+													method="post" 
+													enctype="multipart/form-data"
+												>
+													<div class="registration-template">
+														<div class="form-field-wrapper">
+															<?php echo wp_kses( $field_html, $allowed_tags ); ?>
+														</div>
+														<div class="hidden-fields">
+															<input 
+																type="hidden" 
+																class="event_title" 
+																name="event_title"
+																value="<?php echo get_the_title( $event_id ); ?>"
+															>
+															<input 
+																type="hidden" 
+																class="event_id" 
+																name="event_id"
+																value="<?php echo esc_attr( $event_id ); ?>"
+															>
+															<input 
+																type="hidden" 
+																class="language_type" 
+																name="language_type"
+																value="<?php echo esc_attr( $language ); ?>"
+															>
+															<input 
+																type="hidden" 
+																class="scode" 
+																name="scode"
+																value="<?php echo esc_attr( $event_security_code ); ?>"
+															>
+															<input 
+																type="hidden" 
+																class="checkin" 
+																name="checkin"
+																value="<?php echo esc_attr( $checkin ); ?>"
+															>
+														</div>
+														<br>
+														<div class="button-wrap">
+															<button class="button button-primary register"><?php echo esc_html( $register ); ?></button>
+														</div>
+													</div>
+												</form>
+											</div>
 										<?php
 										}
 									} else {

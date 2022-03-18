@@ -4,42 +4,17 @@
  */
 $locale_submit_settings = filter_input( INPUT_POST, 'locale_submit_settings', FILTER_SANITIZE_STRING );
 
-// TODO: below should be implemented idea with single checking function
-// I added before example of this function getFieldValue
-
-// Check field and return its value or return null
-/*function getFieldValue($dataArr, $key)
-{
-	return (isset($dataArr[$key])) ? $dataArr[$key] : null;
-}
-
-function is_var_empty($variable){
-    return isset( $variable ) ? $variable : '';
-}
-
-*/
-
-
-
 if ( isset( $locale_submit_settings ) ) {
 
-    $local_site_key = filter_input( INPUT_POST, 'local_site_key', FILTER_SANITIZE_STRING );
-	$local_site_key = isset( $local_site_key ) ? $local_site_key : '';
-
-    $local_secret_key = filter_input( INPUT_POST, 'local_secret_key', FILTER_SANITIZE_STRING );
-	$local_secret_key = isset( $local_secret_key ) ? $local_secret_key : '';
-
-
-    $local_overview = filter_input( INPUT_POST, 'local_overview', FILTER_SANITIZE_STRING );
-	$local_overview = isset( $local_overview ) ? $local_overview : 'Overview';
-
-	$local_agenda = filter_input( INPUT_POST, 'local_agenda', FILTER_SANITIZE_STRING );
-	$local_agenda = isset( $local_agenda ) ? $local_agenda : 'Agenda';
+    $local_site_key   = dffmain_is_var_empty( filter_input( INPUT_POST, 'local_site_key', FILTER_SANITIZE_STRING ) );
+    $local_secret_key = dffmain_is_var_empty( filter_input( INPUT_POST, 'local_secret_key', FILTER_SANITIZE_STRING ) );
+    $local_overview   = dffmain_is_var_empty( filter_input( INPUT_POST, 'local_overview', FILTER_SANITIZE_STRING ) );
+	$local_agenda     = dffmain_is_var_empty( filter_input( INPUT_POST, 'local_agenda', FILTER_SANITIZE_STRING ) );
 
     $local_registration_form = filter_input( INPUT_POST, 'local_registration_form', FILTER_SANITIZE_STRING );
 	$local_registration_form = isset( $local_registration_form ) ? $local_registration_form : 'Registration Form';
 
-	$local_registration_is_closed = filter_input( INPUT_POST, 'local_registration_is_closed', FILTER_SANITIZE_STRING );
+    $local_registration_is_closed = filter_input( INPUT_POST, 'local_registration_is_closed', FILTER_SANITIZE_STRING );
 	$local_registration_is_closed = isset( $local_registration_is_closed ) ? $local_registration_is_closed : 'Registration is closed';
 
 	$local_date = filter_input( INPUT_POST, 'local_date', FILTER_SANITIZE_STRING );
@@ -75,22 +50,19 @@ if ( isset( $locale_submit_settings ) ) {
     $local_settings_array['local_site_key'] = $local_site_key;
     $local_settings_array['local_secret_key'] = $local_secret_key;
 
-    // TODO: above you create temporary variables but iа you will use "is_var_empty"
-    // you can remove a lot of line of code
-
-    $local_settings_array['local_overview'] = $local_overview;
-	$local_settings_array['local_agenda'] = $local_agenda;
-	$local_settings_array['local_registration_form'] = $local_registration_form;
+    $local_settings_array['local_overview']               = $local_overview;
+	$local_settings_array['local_agenda']                 = $local_agenda;
+	$local_settings_array['local_registration_form']      = $local_registration_form;
 	$local_settings_array['local_registration_is_closed'] = $local_registration_is_closed;
-	$local_settings_array['local_date'] = $local_date;
-	$local_settings_array['local_time'] = $local_time;
-	$local_settings_array['local_cost'] = $local_cost;
-	$local_settings_array['local_location'] = $local_location;
-	$local_settings_array['local_category'] = $local_category;
-	$local_settings_array['local_register'] = $local_register;
-	$local_settings_array['local_remaining_seats'] = $local_remaining_seats;
-	$local_settings_array['local_events'] = $local_events;
-	$local_settings_array['local_event_details'] = $local_event_details;
+	$local_settings_array['local_date']                   = $local_date;
+	$local_settings_array['local_time']                   = $local_time;
+	$local_settings_array['local_cost']                   = $local_cost;
+	$local_settings_array['local_location']               = $local_location;
+	$local_settings_array['local_category']               = $local_category;
+	$local_settings_array['local_register']               = $local_register;
+	$local_settings_array['local_remaining_seats']        = $local_remaining_seats;
+	$local_settings_array['local_events']                 = $local_events;
+	$local_settings_array['local_event_details']          = $local_event_details;
 
     $local_events_general_settings = wp_json_encode( $local_settings_array );
 	update_option( 'locale_events_general_settings', $local_events_general_settings, false );
@@ -106,10 +78,6 @@ $locale_events_general_settings_get = (array) $locale_events_general_settings_ge
 		Events Settings
 	</h1>
 	<div class="event_general_section">
-        <?php
-        // TODO: Below copy-paste.. Code should be optimized
-
-        ?>
         <div id="config">
             <form action="edit.php?post_type=dffmain-events&page=diffmain-events-settings-page" method="post">
 
@@ -117,195 +85,33 @@ $locale_events_general_settings_get = (array) $locale_events_general_settings_ge
                     <h3>
                         Google Recaptcha Credentials
                     </h3>
-                    <label for="local_site_key">
-                        <span>
-                            Enter Site Key
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_site_key"
-                            name="local_site_key" 
-                            placeholder="Enter Site Key"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_site_key'] ) ? esc_html( $locale_events_general_settings_get['local_site_key'] ) : ''; ?>"
-                        >
-                    </label>
-                    <label for="local_secret_key">
-                        <span>
-                            Enter Secret Key
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_secret_key"
-                            name="local_secret_key" 
-                            placeholder="Enter Secret Key"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_secret_key'] ) ? esc_html( $locale_events_general_settings_get['local_secret_key'] ) : ''; ?>"
-                        >
-                    </label>
+
+                    <?php
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_site_key', 'Enter Site Key', true );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_secret_key', 'Enter Secret Key', true );
+                    ?>
                 </div>
 
                 <div class="page_section single_event_translations google_recaptcha_credentials">
                     <h3>
                         Translate:
                     </h3>
-
-                    <label for="local_overview">
-                        <span>
-                            Overview
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_overview"
-                            name="local_overview"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_overview'] ) ? esc_html( $locale_events_general_settings_get['local_overview'] ) : 'Overview'; ?>"
-                        >
-                    </label>
-
-                    <label for="local_agenda">
-                        <span>
-                            Agenda
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_agenda"
-                            name="local_agenda"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_agenda'] ) ? esc_html( $locale_events_general_settings_get['local_agenda'] ) : 'Agenda'; ?>"
-                        >
-                    </label>
-
-                    <label for="local_registration_form">
-                        <span>
-                            Registration Form
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_registration_form"
-                            name="local_registration_form"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_registration_form'] ) ? esc_html( $locale_events_general_settings_get['local_registration_form'] ) : 'Registration Form'; ?>"
-                        >
-                    </label>
-
-                    <label for="local_registration_is_closed">
-                        <span>
-                            Registration is close
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_registration_is_closed"
-                            name="local_registration_is_closed"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_registration_is_closed'] ) ? esc_html( $locale_events_general_settings_get['local_registration_is_closed'] ) : 'Registration is closed'; ?>"
-                        >
-                    </label>
-
-                    <label for="local_date">
-                        <span>
-                            Date
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_date"
-                            name="local_date"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_date'] ) ? esc_html( $locale_events_general_settings_get['local_date'] ) : 'Date'; ?>"
-                        >
-                    </label>
-
-
-                    <label for="local_time">
-                        <span>
-                            Time
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_time"
-                            name="local_time"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_time'] ) ? esc_html( $locale_events_general_settings_get['local_time'] ) : 'Time'; ?>"
-                        >
-                    </label>
-
-                    <label for="local_cost">
-                        <span>
-                            Cost
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_cost"
-                            name="local_cost"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_cost'] ) ? esc_html( $locale_events_general_settings_get['local_cost'] ) : 'Cost'; ?>"
-                        >
-                    </label>
-
-
-                    <label for="local_location">
-                        <span>
-                            Location
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_location"
-                            name="local_location"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_location'] ) ? esc_html( $locale_events_general_settings_get['local_location'] ) : 'Location'; ?>"
-                        >
-                    </label>
-
-                    <label for="local_category">
-                        <span>
-                            Category
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_category"
-                            name="local_category"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_category'] ) ? esc_html( $locale_events_general_settings_get['local_category'] ) : 'Category'; ?>"
-                        >
-                    </label>
-
-                    <label for="local_register">
-                        <span>
-                            Register
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_register"
-                            name="local_register"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_register'] ) ? esc_html( $locale_events_general_settings_get['local_register'] ) : 'Register'; ?>"
-                        >
-                    </label>
-
-                    <label for="local_remaining_seats">
-                        <span>
-                            Remaining Seats 
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_remaining_seats"
-                            name="local_remaining_seats"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_remaining_seats'] ) ? esc_html( $locale_events_general_settings_get['local_remaining_seats'] ) : 'Remaining Seats'; ?>"
-                        >
-                    </label>
-
-                    <label for="local_">
-                        <span>
-                            Events
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_events"
-                            name="local_events"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_events'] ) ? esc_html( $locale_events_general_settings_get['local_events'] ) : 'Events'; ?>"
-                        >
-                    </label>
-
-                    <label for="local_event_details">
-                        <span>
-                            Event Details
-                        </span>
-                        <input 
-                            type="text" 
-                            id="local_event_details"
-                            name="local_event_details"
-                            value="<?php echo isset( $locale_events_general_settings_get['local_event_details'] ) ? esc_html( $locale_events_general_settings_get['local_event_details'] ) : 'Event Details'; ?>"
-                        >
-                    </label>
-                    
+                    <?php
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_overview', 'Overview' );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_agenda', 'Agenda' );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_registration_form', 'Registration Form' );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_registration_is_closed', 'Registration is closed' );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_date', 'Date' );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_time', 'Time' );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_cost', 'Cost' );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_location', 'Location' );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_category', 'Category' );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_register', 'Register' );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_remaining_seats', 'Remaining Seats' );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_events', 'Events' );
+                    diffmain_the_settins_imput( $locale_events_general_settings_get, 'local_event_details', 'Event Details' );
+                    ?>
+                   
                 </div>
 
                 <input 

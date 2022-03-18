@@ -79,8 +79,6 @@ class Events_Main_Plugin {
         $this->define_admin_hooks();
         $this->define_public_hooks();
         $this->register_custom_user_roles();
-
-        /** TODO rest endpoints -- for app  */
         $this->register_restapis();
 
     }

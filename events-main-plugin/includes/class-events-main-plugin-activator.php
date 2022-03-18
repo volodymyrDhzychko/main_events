@@ -33,22 +33,23 @@ class Events_Main_Plugin_Activator {
 
 		/**Create thank-you page for Event registration */
 		if ( is_multisite() && $network_wide ) { 
-
-			foreach (get_sites(['fields'=>'ids']) as $blog_id) {
-				switch_to_blog($blog_id);
-					$page = get_page_by_path( 'event-registration-thank-you' );
-					if ( !isset($page) ) {
-						$thank_you_page_data = [
-							'post_title' => 'Event Registration Thank You',
-							'post_name' => 'event-registration-thank-you',
-							'post_type' => 'page',
-							'post_status'   => 'publish'
-						];
-						wp_insert_post($thank_you_page_data);
-					}
-				restore_current_blog();
-			} 
-	
+			$sites = get_sites( ['fields'=>'ids'] );
+			if ( isset( $sites ) && ! empty( $sites ) ) {
+				foreach ( $sites as $blog_id ) {
+					switch_to_blog($blog_id);
+						$page = get_page_by_path( 'event-registration-thank-you' );
+						if ( !isset($page) ) {
+							$thank_you_page_data = [
+								'post_title' => 'Event Registration Thank You',
+								'post_name' => 'event-registration-thank-you',
+								'post_type' => 'page',
+								'post_status'   => 'publish'
+							];
+							wp_insert_post($thank_you_page_data);
+						}
+					restore_current_blog();
+				} 
+			}
 		}
 
 

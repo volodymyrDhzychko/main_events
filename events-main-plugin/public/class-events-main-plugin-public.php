@@ -52,7 +52,6 @@ class Events_Main_Plugin_Public {
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 
-		/**TODO -we do not need this??? */
 		add_action( 'wp_ajax_event_subscribe_button_press', array( $this, 'event_subscribe_button_press' ) );
 		add_action( 'wp_ajax_nopriv_event_subscribe_button_press', array( $this, 'event_subscribe_button_press' ) );
 
@@ -130,6 +129,7 @@ class Events_Main_Plugin_Public {
 		$dataArr['event_id'] = $event_id;
 
 		echo wp_json_encode( $dataArr );
+		wp_reset_postdata();
 		exit();
 	}
 

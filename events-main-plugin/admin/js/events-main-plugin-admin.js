@@ -365,27 +365,33 @@ jQuery(document).ready(function () {
                 },
                 success: function (data) {
 
-                    console.log('data', data);
+console.log('data', data);
 
-                    jQuery('.email_history').html(data);
+                    if (data) {
+                        jQuery('.email_history').html(data);
 
-                    jQuery('#email_history').DataTable({
-                        deferRender: true,
-                        'searching': false,
-                        'paging': true,
-                        "lengthChange": false,
-                        'autoWidth': false,
-                        "destroy": true,
-                        'columns': [
-                            { 'width': '14%' },
-                            { 'width': '33%' },
-                            { 'width': '33%' },
-                            { 'width': '20%' }
-                        ]
-                    });
+                        jQuery('#email_history').DataTable({
+                            deferRender: true,
+                            'searching': false,
+                            'paging': true,
+                            "lengthChange": false,
+                            'autoWidth': false,
+                            "destroy": true,
+                            'columns': [
+                                { 'width': '14%' },
+                                { 'width': '33%' },
+                                { 'width': '33%' },
+                                { 'width': '20%' }
+                            ]
+                        });
 
-                    alert("Email sent!");
-                    hide_pagination();
+                        alert("Email sent!");
+                        hide_pagination(); 
+                    }else{
+                        jQuery(".event_send_email .notice-error").remove();
+                        jQuery(".event_send_email").prepend('<div class="notice notice-error"><p>There are no attendees for this Event!</p></div>');
+                    }
+                        
 
                 },
                 beforeSend: function () {

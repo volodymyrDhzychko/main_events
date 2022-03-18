@@ -46,7 +46,7 @@ define( 'EVENTS_MAIN_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 function activate_events_main_plugin( $network_wide ) {
     require_once plugin_dir_path( __FILE__ ) . 'includes/class-events-main-plugin-activator.php';
     Events_Main_Plugin_Activator::activate( $network_wide );
-
+    /** TODO -- not to forget to enable  */
     // if ( !wp_next_scheduled( 'cron_event_reminder' ) ) {
     //     wp_schedule_event( time(), 'daily', 'cron_event_reminder' );
     // }

@@ -55,14 +55,17 @@ function dffmain_mlp_check_if_is_rtl() {
     $translations = dffmain_mlp_get_translations();
     $current_is_rtl = false;
 
-    foreach ($translations as $translation) {
+    if ( isset( $translations ) && ! empty( $translations ) ) {
+        foreach ($translations as $translation) {
 
-        $language = $translation->language();
-        $remote_site_id = $translation->remoteSiteId();
-        if ( get_current_blog_id() == $remote_site_id ) {
-            $current_is_rtl = $language->isRtl();
+            $language = $translation->language();
+            $remote_site_id = $translation->remoteSiteId();
+            if ( get_current_blog_id() == $remote_site_id ) {
+                $current_is_rtl = $language->isRtl();
+            }
         }
     }
+
     return $current_is_rtl;
 }
 
@@ -118,33 +121,36 @@ function get_translations_data() {
     $translations = \Inpsyde\MultilingualPress\resolve(\Inpsyde\MultilingualPress\Framework\Api\Translations::class)->searchTranslations( $args );
 
     $i = 0;
-    foreach ($translations as $translation) {
-        $language        = $translation->language();
-        $language_locale = $language->locale();
-        $language_name   = $language->isoName();
-        $is_rtl          = $language->isRtl();
+    if ( isset( $translations ) && ! empty( $translations ) ) {
+        foreach ($translations as $translation) {
+            $language        = $translation->language();
+            $language_locale = $language->locale();
+            $language_name   = $language->isoName();
+            $is_rtl          = $language->isRtl();
 
-        $remote_site_id = $translation->remoteSiteId();
-        $remote_post_id = $connections[$remote_site_id];
-        $remote_site_url = !empty( $remote_post_id ) ? get_site_url( $remote_site_id, '?p=' . $remote_post_id ) : get_site_url( $remote_site_id, 'events' );
+            $remote_site_id = $translation->remoteSiteId();
+            $remote_post_id = $connections[$remote_site_id];
+            $remote_site_url = !empty( $remote_post_id ) ? get_site_url( $remote_site_id, '?p=' . $remote_post_id ) : get_site_url( $remote_site_id, 'events' );
 
-        $source_site_id  = $translation->sourceSiteId();
-        $source_post_id  = $connections[$source_site_id];
-        
-        if ( $curr_site_id != $remote_site_id ) {
-            $data_array[$i]['language_name']    = $language_name;
-            $data_array[$i]['language_locale']  = $language_locale;
-            $data_array[$i]['is_rtl']           = $is_rtl;
+            $source_site_id  = $translation->sourceSiteId();
+            $source_post_id  = $connections[$source_site_id];
+            
+            if ( $curr_site_id != $remote_site_id ) {
+                $data_array[$i]['language_name']    = $language_name;
+                $data_array[$i]['language_locale']  = $language_locale;
+                $data_array[$i]['is_rtl']           = $is_rtl;
 
-            $data_array[$i]['remote_site_id']   = $remote_site_id;
-            $data_array[$i]['remote_post_id']   = $remote_post_id;
-            $data_array[$i]['remote_site_url']  = $remote_site_url;
-            $data_array[$i]['source_site_id']   = $source_site_id;
-            $data_array[$i]['source_post_id']   = $source_post_id;
+                $data_array[$i]['remote_site_id']   = $remote_site_id;
+                $data_array[$i]['remote_post_id']   = $remote_post_id;
+                $data_array[$i]['remote_site_url']  = $remote_site_url;
+                $data_array[$i]['source_site_id']   = $source_site_id;
+                $data_array[$i]['source_post_id']   = $source_post_id;
 
-            $i++;
+                $i++;
+            }
         }
     }
+    
     return $data_array;
 }
 
@@ -152,11 +158,11 @@ function get_translations_data() {
  * Get converts locale (en_US) to full language name
  * 
  * @param $locale
- * @param $get_code 
+ * @param $get_2chars_code 
  * 
  * @returns string - current language name OR locale 2 signs code if not found
  */
-function convert_locale_to_full_name( $locale, $get_code = false ) {
+function convert_locale_to_full_name( $locale, $get_2chars_code = false ) {
 
     $locale_short = substr( $locale, 0, 2 );
     $wp_locale_conversion = [
@@ -304,6 +310,11 @@ function convert_locale_to_full_name( $locale, $get_code = false ) {
             'name' => 'Dutch (Belgium)',
             'code' => 'nl-be',
             'wp_locale' => 'nl_BE'
+        ) ,
+        'en' => array(
+            'name' => 'English',
+            'code' => 'en',
+            'wp_locale' => 'en_US'
         ) ,
         'en_US' => array(
             'name' => 'English',
@@ -867,15 +878,14 @@ function convert_locale_to_full_name( $locale, $get_code = false ) {
         )
     ];
     if ( isset( $wp_locale_conversion[$locale] ) ) {
-
         $language_name = $wp_locale_conversion[$locale]['name'];
-        if ( $get_code ) {
+        
+        if ( $get_2chars_code ) {
             $language_name = $wp_locale_conversion[$locale]['code'];
         }
     }elseif ( isset( $wp_locale_conversion[$locale_short] ) ) {
-
         $language_name = $wp_locale_conversion[$locale_short]['name'];
-        if ( $get_code ) {
+        if ( $get_2chars_code ) {
             $language_name = $wp_locale_conversion[$locale_short]['code'];
         }
     }else{
@@ -891,11 +901,11 @@ function convert_locale_to_full_name( $locale, $get_code = false ) {
  * 
  * @returns string - current language name
  */
-function get_current_language_name() {
+function get_current_language_name( $get_2chars_code = false ) {
 
     $locale = get_locale();
 
-    $current_language_name = convert_locale_to_full_name( $locale );
+    $current_language_name = convert_locale_to_full_name( $locale, $get_2chars_code );
 
     return $current_language_name;
 }
@@ -995,91 +1005,152 @@ function update_common_meta_fields( $translations, $source_site_id, $source_post
     if ( get_current_blog_id() != $source_site_id ) return;
 
     // get data from source
+    $post_metas = get_post_meta( $source_post_id );
+    
     // Cost settings
-    $event_cost_name = get_post_meta( $source_post_id, 'event_cost_name' );
+    $event_cost_name = $post_metas['event_cost_name'][0];
 
     // Reminder settings
-    $event_reminder_select_box = get_post_meta( $source_post_id, 'event_reminder_select_box' );
+    $event_reminder_select_box = $post_metas['event_reminder_select_box'][0];
 
     // Date settings
-    $event_date_select = get_post_meta( $source_post_id, 'event_date_select' );
+    $event_date_select = $post_metas['event_date_select'][0];
 
     // End date settings
-    $event_end_date_select = get_post_meta( $source_post_id, 'event_end_date_select' );
+    $event_end_date_select = $post_metas['event_end_date_select'][0];
 
     // Time settings
-    $event_time_start_select = get_post_meta( $source_post_id, 'event_time_start_select' );
-    $event_time_end_select = get_post_meta( $source_post_id, 'event_time_end_select' );
+    $event_time_start_select = $post_metas['event_time_start_select'][0];
+    $event_time_end_select = $post_metas['event_time_end_select'][0];
 
     // Google map settings
-    $event_google_map_input = get_post_meta( $source_post_id, 'event_google_map_input' );
+    $event_google_map_input = $post_metas['event_google_map_input'][0];
 
     // Detail image
-    $event_detail_img = get_post_meta( $source_post_id, 'event_detail_img' );
+    $event_detail_img = $post_metas['event_detail_img'][0];
 
     // Security Code Setting
-    $security_code_checkbox = get_post_meta( $source_post_id, 'security_code_checkbox' );
-    $event_security_code = get_post_meta( $source_post_id, 'event_security_code' );
+    $security_code_checkbox = $post_metas['security_code_checkbox'][0];
+    $event_security_code = $post_metas['event_security_code'][0];
 
     // Reminder date
-    $event_reminder_date = get_post_meta( $source_post_id, 'event_reminder_date' );
+    $event_reminder_date = $post_metas['dffmain_post_title'][0];
 
     // Special instruction
-    $event_special_instruction = get_post_meta( $source_post_id, 'event_special_instruction' );
+    $event_special_instruction = $post_metas['event_reminder_date'][0];
 
     // Google maps embeded code
-    $google_embed_maps_code = get_post_meta( $source_post_id, 'google_embed_maps_code' );
+    $google_embed_maps_code = $post_metas['google_embed_maps_code'][0];
 
 
     // Attendee meta data
-    $event_attendee_limit_count = get_post_meta( $source_post_id, 'event_attendee_limit_count' );
-    $event_registration_close_messagez = get_post_meta( $source_post_id, 'event_registration_close_message' );
+    $event_attendee_limit_count = $post_metas['event_attendee_limit_count'][0];
+    $event_registration_close_messagez = $post_metas['event_registration_close_message'][0];
 
+    if ( isset( $translations ) && ! empty( $translations ) ) {
+        foreach ( $translations as $site_id => $post_id ) {
 
-    foreach ( $translations as $site_id => $post_id ) {
+            switch_to_blog( $site_id );
 
-        switch_to_blog( $site_id );
+                $meta_values = [
+                    'event_cost_name' => $event_cost_name,
+                    'event_reminder_select_box' => $event_reminder_select_box, 
+                    'event_date_select' => $event_date_select,
+                    'event_end_date_select' => $event_end_date_select, 
+                    'event_time_start_select' => $event_time_start_select,
+                    'event_time_end_select' => $event_time_end_select, 
+                    'event_google_map_input' => $event_google_map_input,
+                    'event_detail_img' => $event_detail_img, 
+                    'security_code_checkbox' => $security_code_checkbox,
+                    'event_security_code' => $event_security_code, 
+                    'event_reminder_date' => $event_reminder_date,
+                    'event_special_instruction' => $event_special_instruction, 
+                    'google_embed_maps_code' => $google_embed_maps_code,
+                    'event_attendee_limit_count' => $event_attendee_limit_count, 
+                    'event_registration_close_message' => $event_registration_close_message
+                ];
 
-            // Cost settings
-			update_post_meta( $post_id, 'event_cost_name', $event_cost_name );
+                wp_update_post([
+                    'ID'        => $post_id,
+                    'meta_input'=> $meta_values,
+                ]);	
 
-			// Reminder settings
-			update_post_meta( $post_id, 'event_reminder_select_box', $event_reminder_select_box );
-
-			// Date settings
-			update_post_meta( $post_id, 'event_date_select', $event_date_select );
-
-			// End date settings
-			update_post_meta( $post_id, 'event_end_date_select', $event_end_date_select );
-
-			// Time settings
-			update_post_meta( $post_id, 'event_time_start_select', $event_time_start_select );
-			update_post_meta( $post_id, 'event_time_end_select', $event_time_end_select );
-
-			// Google map settings
-			update_post_meta( $post_id, 'event_google_map_input', $event_google_map_input );
-
-			// Detail image
-			update_post_meta( $post_id, 'event_detail_img', sanitize_text_field( $meta_key ) );
-
-			// Security Code Setting
-			update_post_meta( $post_id, 'security_code_checkbox', $security_code_checkbox );
-			update_post_meta( $post_id, 'event_security_code', $event_security_code );
-
-			// Reminder date
-			update_post_meta( $post_id, 'event_reminder_date', $event_reminder_date );
-
-			// Special instruction
-			update_post_meta( $post_id, 'event_special_instruction', $event_special_instruction );
-
-			// Google maps embeded code
-			update_post_meta( $post_id, 'google_embed_maps_code', $google_embed_maps_code );
-
-
-			// Attendee meta data
-			update_post_meta( $post_id, 'event_attendee_limit_count', $event_attendee_limit_count );
-			update_post_meta( $post_id, 'event_registration_close_message', $event_registration_close_message );
-
-        restore_current_blog();
+            restore_current_blog();
+        }
     }
+}
+
+/**
+ * checks if there is translations
+ *
+ * @return [boolean] 
+ */
+function dffmain_has_translations(){
+    $trahslation_ids = get_translations_ids();
+    if ( !empty( $trahslation_ids ) ) {
+        return true;
+    }
+    return false;
+}
+
+
+/**
+ * Check field and return its value or return empty string
+ *
+ * @param [array] $data_arr
+ * @param [string] $key
+ * 
+ * @return [mix] value OR empty string
+ */
+function dffmain_get_field_value( $data_arr, $key){
+	return ( isset( $data_arr[$key] ) ) ? $data_arr[$key] : '';
+}
+
+/**
+ * Check variable and return its value or return empty string
+ *
+ * @param [mix] $variable
+ * 
+ * @return [mix] value OR empty string
+ */
+function dffmain_is_var_empty( $variable ){
+    return isset( $variable ) ? $variable : '';
+} 
+
+/**
+ * Show Events setting imput for multisite instance
+ *
+ * @param [array] $settings
+ * @param [string] $id
+ * @param [string] $text
+ * @param [boolean] $placeholder
+ * 
+ * @return [string] $html
+ */
+function diffmain_the_settins_imput( $settings, $id, $text, $placeholder = false ){
+
+    if ( empty( $settings )) {
+        echo 'No such setting: ' . $settings . '[' . $id . ']';
+        return;
+    }
+    $value = dffmain_is_var_empty( esc_html( $settings[$id] ) );
+    if ( empty( $value ) && !$placeholder ) {
+        $value = $text;
+    }
+
+    $html =     '<label for="'. $id .'">';
+    $html .=        '<span>';
+    $html .=            $text;
+    $html .=        '</span>';
+    $html .=        '<input ';
+    $html .=            'type="text" ';
+    $html .=            'id="'. $id .'" ';
+    $html .=            'name="'. $id .'" ';
+                        if ( $placeholder ) {
+                            $html .= 'placeholder="' . $text . '" ';
+                        }
+    $html .=            'value="' . $value . '">';
+    $html .=    '</label>';
+
+    echo $html;
 }

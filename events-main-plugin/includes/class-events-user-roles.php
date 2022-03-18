@@ -36,7 +36,7 @@ class Events_Custom_UserRoles {
 	/**
 	 * Custom Caps of the roles.
 	 */
-	public function dffmain_custom_caps() { /** TODO different capabilities for admin & event_manager */
+	public function dffmain_custom_caps() {
 		$roles = array( 'administrator', 'event_manager' );
 
 		foreach ( $roles as $role ) {

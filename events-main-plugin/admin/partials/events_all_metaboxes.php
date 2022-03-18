@@ -3,19 +3,16 @@
  * Function for Events editor screen with tabs.
  */
 function tab_editor_function() {
+	
 	global $post;
 
-	// TODO: You shouldn't get several post meta as separate call "get_post_meta".
-    // Each time when you're call it - you're making request to DB.
-    // So the right way is call get_post_meta( $post->ID ) - only 1 request to DB and receive assoc array
-    // and then use it like general array
+	$post_metas = get_post_meta( $post->ID );
 
-	$events_overview         = get_post_meta( $post->ID, 'events_overview', true );
-	$dffmain_events_agenda   = get_post_meta( $post->ID, 'dffmain_events_agenda', true );
-	$dffmain_event_location  = get_post_meta( $post->ID, 'dffmain_event_location', true );
-	$arabic_event_location   = get_post_meta( $post->ID, 'arabic_event_location', true );
-	$dffmain_post_title      = get_post_meta( $post->ID, 'dffmain_post_title', true );
-	$template_id             = get_post_meta( $post->ID, '_wp_template_id', true );
+	$events_overview         = $post_metas['events_overview'][0];
+	$dffmain_events_agenda   = $post_metas['dffmain_events_agenda'][0];
+	$dffmain_event_location  = $post_metas['dffmain_event_location'][0];
+	$dffmain_post_title      = $post_metas['dffmain_post_title'][0];
+	$template_id             = $post_metas['_wp_template_id'][0];
 	$action                  = filter_input( INPUT_GET, 'action', FILTER_SANITIZE_STRING );
 	$action                  = isset( $action ) ? $action : '';
 	$event_cancelled         = get_post_status( $post->ID );
@@ -33,11 +30,11 @@ function tab_editor_function() {
 	);
 	$query       = new WP_Query( $args );
 	$found_posts = $query->found_posts ? $query->found_posts : 0;
-
+	wp_reset_postdata();
 	?>
 
 	<?php if ( ! empty( $template_id ) && 'edit' === $action ) { ?>
-		<div class="attendee-button-wrap">
+		<div class="attendee-button-wrap <?php echo dffmain_mlp_check_if_is_rtl() ? 'dffmain--rtl' : '';  ?>">
 			<div class="button-wrap">
 				<?php if ( 'cancelled' === $event_cancelled ) { ?>
 					<a class="button button-primary cancelled" href="javascript:void(0)">
@@ -80,7 +77,7 @@ function tab_editor_function() {
 				Registration Form
 			</span>
 			<span class="tablinks general_settings" onclick="openEditor(event, 'general_settings')">
-				General Settings
+				Send Special Email
 			</span>
 		</div>
 
@@ -184,8 +181,7 @@ function tab_editor_function() {
 							'posts_per_page' => -1,
 							'fields'         => 'ids',
 						);
-						// TODO: After each custom WP_Query request - don't forget to call function
-                        // wp_reset_postdata(); to Restore original Post Data
+
 						$register_forms_data = new WP_Query( $args_register_forms );
 
 						if ( isset( $register_forms_data->posts ) && ! empty( $register_forms_data->posts ) ) {
@@ -201,6 +197,7 @@ function tab_editor_function() {
 								<?php
 							}
 						}
+						wp_reset_postdata();
 						?>
 					</select>
 					<input 
@@ -295,59 +292,65 @@ function tab_editor_function() {
 				</table>
 			</div>
 			<?php 
-			$translations = get_translations_data();
-			foreach ( $translations as $translation ) {
-				$language_name = $translation['language_name'];
-				?>
-				<h4 class="heading-tag">
-					For <?php echo $language_name; ?> Attendee
-				</h4>
-				<div class="event_titlediv">
-					<input 
-						type="text" 
-						size="30" 
-						spellcheck="true" 
-						autocomplete="off"
-						id="dffmain_special_mail_subject_<?php echo $language_name; ?>" 
-						data-lang="<?php echo $language_name; ?>"
-						class="dffmain_mail_subject"  
-						<?php if ( $translation['is_rtl'] ) echo 'dir="rtl"'; ?>
-						placeholder="{{e_eventname}} | Email Subject Here" />
-				</div>
-				<?php
-				wp_editor(
-					'',
-					'event_send_special_email_' . $language_name,
-					array(
-						'media_buttons' => false,
-						'textarea_rows' => 100,
-						'editor_height' => 200,
-						'quicktags'     => false,
-					)
-				);
-				?>
-				<p>
-					<b>You can use these predefined tags for <?php echo $language_name; ?>.</b>
-				</p>
-				<p>
-					<b>Description: Attribute</b>
-				</p>
+			if ( dffmain_has_translations() ) {
 
-				<div class="predefine_attributes">
-					<table  style="width:100%">
-						<tr role="row">
-							<td >Attendee First Name : <b>{{a_attendee_fname}}</b></td>
-							<td>Attendee Last Name : <b>{{a_attendee_lname}}</b></td>
-							<td>Event Name : <b>{{a_eventname}}</b></td>
-						</tr>
-						<tr role="row">
-							<td>Event Date/Time : <b>{{date/time}}</b></td>
-							<td>Event Location : <b>{{location}}</b></td>
-						</tr>
-					</table>
-				</div>
-				<?php
+				$translations = get_translations_data();
+				if ( isset( $translations ) && ! empty( $translations ) ) {
+					foreach ( $translations as $translation ) {
+						$language_name = $translation['language_name'];
+						?>
+						<h4 class="heading-tag">
+							For <?php echo $language_name; ?> Attendee
+						</h4>
+						<div class="event_titlediv">
+							<input 
+								type="text" 
+								size="30" 
+								spellcheck="true" 
+								autocomplete="off"
+								id="dffmain_special_mail_subject_<?php echo $language_name; ?>" 
+								data-lang="<?php echo $language_name; ?>"
+								class="dffmain_mail_subject"  
+								<?php if ( $translation['is_rtl'] ) echo 'dir="rtl"'; ?>
+								placeholder="{{e_eventname}} | Email Subject Here" />
+						</div>
+						<?php
+						wp_editor(
+							'',
+							'event_send_special_email_' . $language_name,
+							array(
+								'media_buttons' => false,
+								'textarea_rows' => 100,
+								'editor_height' => 200,
+								'quicktags'     => false,
+							)
+						);
+						?>
+						<p>
+							<b>You can use these predefined tags for <?php echo $language_name; ?>.</b>
+						</p>
+						<p>
+							<b>Description: Attribute</b>
+						</p>
+
+						<div class="predefine_attributes">
+							<table  style="width:100%">
+								<tr role="row">
+									<td >Attendee First Name : <b>{{a_attendee_fname}}</b></td>
+									<td>Attendee Last Name : <b>{{a_attendee_lname}}</b></td>
+									<td>Event Name : <b>{{a_eventname}}</b></td>
+								</tr>
+								<tr role="row">
+									<td>Event Date/Time : <b>{{date/time}}</b></td>
+									<td>Event Location : <b>{{location}}</b></td>
+								</tr>
+							</table>
+						</div>
+						<?php
+					}
+				}
 			}
+			// if ( dffmain_has_translations() )
 			?>
 			<div class="event_send_email">
 				<input 
@@ -379,12 +382,14 @@ function tab_editor_function() {
 							</thead>
 							<tbody>
 								<?php
-								$event_email_history = get_post_meta( $post->ID, 'event_email_history', false );
-								$event_email_history = array_reverse( $event_email_history );
+
+								$event_email_history = dffmain_is_var_empty( $post_metas['event_email_history'] );
+								$event_email_history = ( $event_email_history ) ? array_reverse( $event_email_history ) : [];
 
 								if ( isset( $event_email_history ) && ! empty( $event_email_history ) ) {
 									$count = 1;
 									foreach ( $event_email_history as $event_email_history_data ) {
+										$event_email_history_data = maybe_unserialize( $event_email_history_data );
 										?>
 										<tr>
 											<td>
@@ -463,7 +468,7 @@ function event_cost_function() {
 			value="Free" 
 			<?php checked( $event_cost_name, 'Free' ); ?> 
 		/>
-		Free
+		<?php echo dffmain_mlp_check_if_is_rtl() ? 'Paid' : 'Free';  ?>
 	</label>
 	<label for="paid">
 		<span class="screen-reader-text">event_cost_name_paid</span>
@@ -474,7 +479,7 @@ function event_cost_function() {
 			value="Paid" 
 			<?php checked( $event_cost_name, 'Paid' ); ?>
 		/>
-		Paid
+		<?php echo dffmain_mlp_check_if_is_rtl() ? 'Free' : 'Paid';  ?>
 	</label>
 	<?php
 
@@ -655,18 +660,13 @@ function event_detail_image_function() {
 
 function event_detail_image_uploader_field( $name, $value = '') {
 	$image      = '">Set Event Detail  image';
-	$image_size = 'full'; // it would be better to use thumbnail size here (150x150 or so)
+	$image_size = 'thumbnail'; // it would be better to use thumbnail size here (150x150 or so) 
 	$display    = 'none'; // display state ot the "Remove image" button
 
 	if( $image_attributes = wp_get_attachment_image_src( $value, $image_size ) ) {
 
-		// $image_attributes[0] - image URL
-		// $image_attributes[1] - image width
-		// $image_attributes[2] - image height
-
 		$image = '"><img src="' . $image_attributes[0] . '" style="max-width:95%;display:block;" />';
 		$display = 'inline-block';
-
 	}
 
 	return '
@@ -692,7 +692,7 @@ function event_security_code_function() {
 	<label for="security_code_checkbox">
 		<input type="checkbox" id="security_code_checkbox" name="security_code_checkbox" class="security_code_checkbox"
 			   value="true" <?php checked( $security_code_checkbox, 'true' ); ?>>
-		Enable to enter invitation code.<span class="tool-tip"
+			Enable to enter invitation code.<span class="tool-tip"
 											  data-tip="In the registration form of the front side, Attendee need to enter valid invitation code which is set here."><i>!</i></span>
 	</label>
 	<div id="security_code" class="security_code"

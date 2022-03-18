@@ -66,9 +66,11 @@ function register_attendee( $request ) {
 
 	// Check require fields.
 	$empty_fields = array();
-	foreach ( $required_fields as $rk => $rv ) {
-		if ( empty( $rv ) ) {
-			$empty_fields[] = $rk;
+	if ( isset( $required_fields ) && ! empty( $required_fields ) ) {
+		foreach ( $required_fields as $rk => $rv ) {
+			if ( empty( $rv ) ) {
+				$empty_fields[] = $rk;
+			}
 		}
 	}
 
@@ -85,13 +87,10 @@ function register_attendee( $request ) {
 	}
 
 	// Check if event exists.
-	$status = get_post_status( $event_id, '', '', 'attendees' ); /** TODO only 1 param!!! */
+	$status = get_post_status( $event_id );	
 
-	$title_meta_key = 'dffmain_post_title';
-
-	// TODO: all input shouldn't be updated.. it violates rule for Immutable input parameters
-	$_POST['event_title'] = get_post_meta( $event_id, $title_meta_key, true );
-	if ( 'publish' !== $status || empty( $_POST['event_title'] ) ) {
+	$event_title = get_post_meta( $event_id, 'dffmain_post_title', true );
+	if ( 'publish' !== $status || empty( 'dffmain_post_title' ) ) {
 		return new \WP_REST_Response(
 			array(
 				'status'  => 404,
@@ -140,6 +139,8 @@ function register_attendee( $request ) {
 			);
 
 			$query = new WP_Query( $arg );
+			$email_already_registered_count =  $query->found_posts ? $query->found_posts : 0;
+			wp_reset_postdata();
 		}
 
 		$args        = array(
@@ -154,7 +155,8 @@ function register_attendee( $request ) {
 		$query_count = new WP_Query( $args );
 		$found_posts = $query_count->found_posts ? $query_count->found_posts : 0;
 		$event_attendee_limit_count = get_post_meta( $event_id, 'event_attendee_limit_count', true );
-
+		wp_reset_postdata();
+		
 		if( $found_posts >= $event_attendee_limit_count ) {
 			return new \WP_REST_Response(
 				array(
@@ -165,7 +167,7 @@ function register_attendee( $request ) {
 			);
 		}
 
-		if ( 0 !== $query->found_posts ) {
+		if ( 0 !== $email_already_registered_count ) {
 			return new \WP_REST_Response(
 				array(
 					'status'  => 409,
@@ -175,16 +177,15 @@ function register_attendee( $request ) {
 			);
 		}
 
-
-		//TODO: Don't update input parameters
 		$_POST['api_registration'] = 'yes';
-		foreach ( $parameters as $k => $v ) {
-			$_POST[ $k ] = $v;
-		}
 
+		if ( isset( $parameters ) && ! empty( $parameters ) ) {
+			foreach ( $parameters as $k => $v ) {
+				$_POST[ $k ] = $v;
+			}
+		}
 		$html = '';
 
-		/**TODO - correct file needed */
 		require get_template_directory() . '/templates/thank-you.php';
 
 		if ( 'success' === $html ) {
@@ -275,24 +276,20 @@ function select_registration_form_for_event_callback() {
 	$post_id     = isset( $post_id ) ? $post_id : '';
 
 	if ( $template_id ) {
-		$template_id            = intval( $template_id );
+		$template_id = intval( $template_id );
+
 		$registration_form_data = get_post_meta( $template_id, '_registration_form_data', true );
 		$field_preference       = get_post_meta( $post_id, '_wp_field_preference', true );
 		$saved_template_id      = get_post_meta( $post_id, '_wp_template_id', true );
 	}
-	if ( intval( $saved_template_id ) === intval( $template_id ) ) {
-		// TODO: don't understand what is happen here
-		$field_preference = $field_preference;
-	} else {
-		$field_preference = array();
+	if ( intval( $saved_template_id ) !== intval( $template_id ) ) {
+		$field_preference = [];
 	}
+
 	$compulsory_field_html = '';
 	$additional_field_html = '';
 	$select_all            = true;
 	$html                  = '';
-
-
-	// TODO: below spaghetti code.. Should be optimized for better optimization and clarity
 
 	if ( ! empty( $registration_form_data ) && isset( $registration_form_data ) ) {
 		foreach ( $registration_form_data as $key => $item ) {
@@ -305,89 +302,32 @@ function select_registration_form_for_event_callback() {
 			}
 
 			if ( 3 > $key ) {
-				$compulsory_field_html .= '<div class="field-wrap">
-                                                    <div class="field-inner">
-                                                        <div class="field-container en-field">
-                                                            <span class="field-label">' . $en_arr['label'] . '</span>
-                                                            <label for="' . $en_arr['id'] . '">
-                                                                <input type="' . $en_arr['type'] . '" name="' . $en_arr['id'] . '" id="' . $en_arr['id'] . '">
-                                                            </label>
-                                                        </div>
-                                                        <div class="field-container ar-field">
-                                                            <span class="field-label">' . $ar_arr['label'] . '</span>
-                                                            <label for="' . $ar_arr['id'] . '">
-                                                                <input type="' . $ar_arr['type'] . '" name="' . $ar_arr['id'] . '" id="' . $ar_arr['id'] . '">
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </div>';
+
+				$compulsory_field_html .= registration_form_compulsory_field_html( $en_arr, $ar_arr );
+
 			} else {
+
 				if ( 'true' === $field_preference[ $en_arr['id'] ] ) {
 					$check_html = 'checked';
 				} else {
 					$check_html = '';
 				}
+				
 				if ( $select_all ) {
-					$additional_field_html .= '<div class="field-wrap">
-                                                    <div class="select_field_checkbox">
-                                                        <div class="select_all_checkbox">
-                                                            <label for="select_all">
-                                                                <input  name="select_all" id="select_all" type="checkbox">
-                                                                Select All
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </div>';
+
+					$additional_field_html .= registration_form_if_select_all();
                     $select_all = false;
+
 				}
+
 				if ( 'Text Input' === $en_arr['control'] ) {
-					$additional_field_html .= '<div class="field-wrap">
-                                                        <div class="select_field_checkbox">
-                                                            <div class="display-filed-checkbox">
-                                                                <label for="checkbox_' . $en_arr['id'] . '">
-                                                                    <input ' . $check_html . ' name="checkbox_' . $en_arr['id'] . '" id="checkbox_' . $en_arr['id'] . '" type="checkbox">
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                        <div class="field-inner">
-                                                            <div class="field-container en-field">
-                                                                <span class="field-label">' . $en_arr['label'] . $required_field . '</span>
-                                                                <label for="' . $en_arr['id'] . '">
-                                                                    <input type="' . $en_arr['type'] . '" name="' . $en_arr['id'] . '" id="' . $en_arr['id'] . '">
-                                                                </label>
-                                                            </div>
-                                                            <div class="field-container ar-field">
-                                                                <span class="field-label">' . $ar_arr['label'] . $required_field . '</span>
-                                                                <label for="' . $ar_arr['id'] . '">
-                                                                    <input type="' . $ar_arr['type'] . '" name="' . $ar_arr['id'] . '" id="' . $ar_arr['id'] . '">
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </div>';
+
+					$additional_field_html .= registration_form_text_input( $en_arr, $ar_arr, $check_html, $required_field);
+					
 				} elseif ( 'Text Area' === $en_arr['control'] ) {
-					$additional_field_html .= '<div class="field-wrap">
-                                                        <div class="select_field_checkbox">
-                                                            <div class="display-filed-checkbox">
-                                                                <label for="checkbox_' . $en_arr['id'] . '">
-                                                                    <input ' . $check_html . ' name="checkbox_' . $en_arr['id'] . '" id="checkbox_' . $en_arr['id'] . '" type="checkbox">
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                        <div class="field-inner">
-                                                            <div class="field-container en-field">
-                                                                <span class="field-label">' . $en_arr['label'] . $required_field . '</span>
-                                                                <label for="' . $en_arr['id'] . '">
-                                                                    <textarea type="textarea" class="form-control" name="' . $en_arr['id'] . '" id="' . $en_arr['id'] . '"></textarea>
-                                                                </label>
-                                                            </div>
-                                                            <div class="field-container ar-field">
-                                                                <span class="field-label">' . $ar_arr['label'] . $required_field . '</span>
-                                                                <label for="' . $ar_arr['id'] . '">
-                                                                    <textarea type="textarea" class="form-control" name="' . $ar_arr['id'] . '" id="' . $ar_arr['id'] . '"></textarea>
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </div>';
+
+					$additional_field_html .= registration_form_text_area( $en_arr, $ar_arr, $check_html, $required_field );
+
 				} elseif ( 'Dropdown Select' === $en_arr['control'] ) {
 					$en_options = $en_arr['values'];
 					$ar_options = $ar_arr['values'];
@@ -405,199 +345,87 @@ function select_registration_form_for_event_callback() {
 							$en_option_html .= '<option value="' . $en_options[ $i ]['value'] . '">' . $en_options[ $i ]['value'] . '</option>';
 							$ar_option_html .= '<option value="' . $ar_options[ $i ]['value'] . '">' . $ar_options[ $i ]['value'] . '</option>';
 						}
-						$additional_field_html .= '<div class="field-wrap">
-                                                            <div class="select_field_checkbox">
-                                                               <div class="display-filed-checkbox">
-                                                                    <label for="checkbox_' . $en_arr['id'] . '">
-                                                                        <input ' . $check_html . ' name="checkbox_' . $en_arr['id'] . '" id="checkbox_' . $en_arr['id'] . '" type="checkbox">
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                            <div class="field-inner">
-                                                                <div class="field-container en-field">
-                                                                    <span class="field-label">' . $en_arr['label'] . $required_field . '</span>
-                                                                    <label for="' . $en_arr['id'] . '">
-                                                                        <select name="' . $en_arr['id'] . '" id="' . $en_arr['id'] . '" ' . $multiple . '>
-                                                                            <option>Choose</option>
-                                                                            ' . $en_option_html . '
-                                                                        </select>
-                                                                    </label>
-                                                                </div>
-                                                                <div class="field-container ar-field">
-                                                                    <span class="field-label">' . $ar_arr['label'] . $required_field . '</span>
-                                                                    <label for="' . $ar_arr['id'] . '">
-                                                                        <select name="' . $ar_arr['id'] . '" id="' . $ar_arr['id'] . '" ' . $multiple . '>
-                                                                            <option>أختر</option>
-                                                                            ' . $ar_option_html . '
-                                                                        </select>
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                        </div>';
+
+						$additional_field_html .= registration_form_dropdown_select( $en_arr, $ar_arr, $check_html, $required_field, $multiple, $en_option_html, $ar_option_html );
+
 					}
 				} elseif ( 'Radio' === $en_arr['control'] ) {
 					$en_options = $en_arr['values'];
 					$ar_options = $ar_arr['values'];
 
+					$en_option_html = '';
+					$ar_option_html = '';
 					if ( ! empty( $en_options ) ) {
-						$en_option_html = '';
-						$ar_option_html = '';
 						for ( $i = 0; $i < sizeof( $en_options ); $i++ ) {
-							$en_option_html .= '<div class="formbuilder-radio">
+							$en_option_html .= 		'<div class="formbuilder-radio">
                                                         <input name="' . $en_arr['id'] . '" id="' . $en_arr['id'] . $i . '" type="radio" value="' . $en_options[ $i ]['value'] . '">
                                                         <label for="' . $en_arr['id'] . $i . '">' . $en_options[ $i ]['value'] . '</label>
                                                     </div>';
-							$ar_option_html .= '<div class="formbuilder-radio">
+							$ar_option_html .= 		'<div class="formbuilder-radio">
                                                         <input name="' . $ar_arr['id'] . '" id="' . $ar_arr['id'] . $i . '" type="radio" value="' . $ar_options[ $i ]['value'] . '">
                                                         <label for="' . $ar_arr['id'] . $i . '">' . $ar_options[ $i ]['value'] . '</label>
                                                     </div>';
 						}
-						$additional_field_html .= '<div class="field-wrap">
-                                                            <div class="select_field_checkbox">
-                                                                 <div class="display-filed-checkbox">
-                                                                    <label for="checkbox_' . $en_arr['id'] . '">
-                                                                        <input ' . $check_html . ' name="checkbox_' . $en_arr['id'] . '" id="checkbox_' . $en_arr['id'] . '" type="checkbox">
-                                                                    </label>
-                                                                 </div>
-                                                            </div>
-                                                            <div class="field-inner">
-                                                                <div class="field-container en-field">
-                                                                    <span class="field-label">' . $en_arr['label'] . $required_field . '</span>
-                                                                    <div class="radio-group">
-                                                                        ' . $en_option_html . '
-                                                                    </div>
-                                                                </div>
-                                                                <div class="field-container ar-field">
-                                                                    <span class="field-label">' . $ar_arr['label'] . $required_field . '</span>
-                                                                    <div class="radio-group">
-                                                                        ' . $ar_option_html . '
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>';
+
+						$additional_field_html .= registration_form_radio( $en_arr, $ar_arr, $check_html, $required_field, $en_option_html, $ar_option_html );
+
 					}
 				} elseif ( 'Checkbox' === $en_arr['control'] ) {
 					$en_options = $en_arr['values'];
 					$ar_options = $ar_arr['values'];
 
+					$en_option_html = '';
+					$ar_option_html = '';
 					if ( ! empty( $en_options ) ) {
-						$en_option_html = '';
-						$ar_option_html = '';
 						for ( $i = 0; $i < sizeof( $en_options ); $i++ ) {
-							$en_option_html .= '<div class="formbuilder-checkbox">
-                                                        <input name="' . $en_arr['id'] . $i . '[]" id="' . $en_arr['id'] . $i . '" type="checkbox" value="' . $en_options[ $i ]['value'] . '">
-                                                        <label for="' . $en_arr['id'] . $i . '">' . $en_options[ $i ]['value'] . '</label>
-                                                    </div>';
-							$ar_option_html .= '<div class="formbuilder-checkbox">
-                                                        <input name="' . $ar_arr['id'] . $i . '[]" id="' . $ar_arr['id'] . $i . '" type="checkbox" value="' . $ar_options[ $i ]['value'] . '">
-                                                        <label for="' . $ar_arr['id'] . $i . '">' . $ar_options[ $i ]['value'] . '</label>
-                                                    </div>';
+							$en_option_html .=  '<div class="formbuilder-checkbox">
+													<input name="' . $en_arr['id'] . $i . '[]" id="' . $en_arr['id'] . $i . '" type="checkbox" value="' . $en_options[ $i ]['value'] . '">
+													<label for="' . $en_arr['id'] . $i . '">' . $en_options[ $i ]['value'] . '</label>
+												</div>';
+							$ar_option_html .= 	'<div class="formbuilder-checkbox">
+													<input name="' . $ar_arr['id'] . $i . '[]" id="' . $ar_arr['id'] . $i . '" type="checkbox" value="' . $ar_options[ $i ]['value'] . '">
+													<label for="' . $ar_arr['id'] . $i . '">' . $ar_options[ $i ]['value'] . '</label>
+												</div>';
 						}
-						$additional_field_html .= '<div class="field-wrap">
-                                                            <div class="select_field_checkbox">
-                                                                <div class="display-filed-checkbox">
-                                                                     <label for="checkbox_' . $en_arr['id'] . '">
-                                                                        <input ' . $check_html . ' name="checkbox_' . $en_arr['id'] . '" id="checkbox_' . $en_arr['id'] . '" type="checkbox">
-                                                                     </label>
-                                                                </div>
-                                                            </div>
-                                                            <div class="field-inner">
-                                                                <div class="field-container en-field">
-                                                                    <span class="field-label">' . $en_arr['label'] . $required_field . '</span>
-                                                                    <div class="checkbox-group">
-                                                                        ' . $en_option_html . '
-                                                                    </div>
-                                                                </div>
-                                                                <div class="field-container ar-field">
-                                                                    <span class="field-label">' . $ar_arr['label'] . $required_field . '</span>
-                                                                    <div class="radio-group">
-                                                                        <div class="checkbox-group">
-                                                                        ' . $ar_option_html . '
-                                                                    </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>';
+
+						$additional_field_html .= registration_form_checkbox( $en_arr, $ar_arr, $check_html, $required_field, $en_option_html, $ar_option_html );
+
 					}
 				} elseif ( 'File Upload' === $en_arr['control'] ) {
-					$additional_field_html .= '<div class="field-wrap">
-                                                    <div class="select_field_checkbox">
-                                                        <div class="display-filed-checkbox">
-                                                             <label for="checkbox_' . $en_arr['id'] . '">
-                                                                <input ' . $check_html . ' name="checkbox_' . $en_arr['id'] . '" id="checkbox_' . $en_arr['id'] . '" type="checkbox">
-                                                             </label>
-                                                        </div>
-                                                    </div>
-                                                   <div class="field-inner">
-                                                       <div class="field-container en-field">
-                                                           <span class="field-label">' . $en_arr['label'] . $required_field . '</span>
-                                                           <div class="field-group">
-                                                               <div class="file-upload-wrap">
-                                                                   <label for="en_filename">
-                                                                       <input type="text" id="en_filename" class="filename" readOnly="true"  />
-                                                                   </label>
-                                                                    <label for="' . $en_arr['id'] . '">
-                                                                        <input type="file" name="' . $en_arr['id'] . '" id="' . $en_arr['id'] . '" class="form-control" style="display:none" onclick="Handlechange(this.id);" />
-                                                                    </label>
-                                                               </div>
-                                                               <div class="button-wrap">
-                                                                   <label for="' . $en_arr['button1'] . '">
-                                                                       <input type="button" name="' . $en_arr['button1'] . '" value="' . $en_arr['button1'] . '" onclick="HandleBrowseClick(this.id);" id="' . $en_arr['button1'] . '" class="button button-primary" />
-                                                                   </label>
-                                                               </div>
-                                                           </div>
-                                                       </div>
-                                                       <div class="field-container ar-field">
-                                                           <span class="field-label">' . $ar_arr['label'] . $required_field . '</span>
-                                                           <div class="field-group">
-                                                               <div class="file-upload-wrap">
-                                                                   <label for="ar_filename">
-                                                                       <input type="text" id="ar_filename" class="filename" readOnly="true" />
-                                                                   </label>
-                                                                    <label for="' . $ar_arr['id'] . '">
-                                                                        <input type="file" name="' . $ar_arr['id'] . '" id="' . $ar_arr['id'] . '" class="form-control" style="display:none" onclick="Handlechange(this.id);"/>
-                                                                    </label>
-                                                               </div>
-                                                               <div class="button-wrap">
-                                                                   <label for="' . $ar_arr['button1'] . '">
-                                                                       <input type="button" name="' . $ar_arr['button1'] . '" value="' . $ar_arr['button1'] . '" onclick="HandleBrowseClick(this.id);" id="' . $ar_arr['button1'] . '" class="button button-primary" />
-                                                                   </label>
-                                                               </div>
-                                                           </div>
-                                                       </div>
-                                                   </div>
-                                                </div>';
+					$additional_field_html .= registration_form_file_upload( $en_arr, $ar_arr, $check_html, $required_field );
 				}
 			}
 		}
-		$html .= '<div id="registration-template" class="registration-template">
-                        <div class="compulsory-field-main">
-                            <div id="compulsory-fields-wrap" class="compulsory-fields-wrap">
-                                <div class="accordian-main">
-                                    <div class="accordian-title">
-                                        <h3>Compulsory Fields</h3>
-                                    </div>
-                                    <div class="accordian-body">' . $compulsory_field_html . '</div>
-                                </div>
-                            </div>
-						</div>';
-			if( '' !== $additional_field_html ){
-				$html .= '<div class="additional-field-main">
-							<div id="additional-fields-wrap" class="additional-fields-wrap">
-								<div class="add-new-fields-wrap" id="add-new-fields-wrap">
+
+		$html .= 	'<div id="registration-template" class="registration-template">
+							<div class="compulsory-field-main">
+								<div id="compulsory-fields-wrap" class="compulsory-fields-wrap">
 									<div class="accordian-main">
 										<div class="accordian-title">
-											<h3>Additional Fields</h3>
+											<h3>Compulsory Fields</h3>
 										</div>
-										<div class="accordian-body">' . $additional_field_html . '</div>
+										<div class="accordian-body">' . $compulsory_field_html . '</div>
 									</div>
 								</div>
-							</div>
-						</div>';
+							</div>';
+			if( '' !== $additional_field_html ){
+				$html .= 	'<div class="additional-field-main">
+								<div id="additional-fields-wrap" class="additional-fields-wrap">
+									<div class="add-new-fields-wrap" id="add-new-fields-wrap">
+										<div class="accordian-main">
+											<div class="accordian-title">
+												<h3>Additional Fields</h3>
+											</div>
+											<div class="accordian-body">' . $additional_field_html . '</div>
+										</div>
+									</div>
+								</div>
+							</div>';
 			}
-		$html .= '</div>';
+		$html .= 	'</div>';
 	}
-	$dataArr                            = array();
+	
+	$dataArr = [];
 	$dataArr['compulsoryFieldHtml']     = $compulsory_field_html;
 	$dataArr['additionalFieldHtml']     = $additional_field_html;
 	$dataArr['status']                  = ( ! empty( $registration_form_data ) ) ? true : false;
@@ -606,8 +434,9 @@ function select_registration_form_for_event_callback() {
 	$dataArr['$saved_template_id']      = $saved_template_id;
 	$dataArr['$template_id']            = $template_id;
 	$dataArr['formHtml']                = $html;
+	
 	echo wp_json_encode( $dataArr );
-	exit();
+	wp_die();
 }
 
 
@@ -647,7 +476,7 @@ function save_registration_form_for_event_callback() {
 	$dataArr['$saved_field_preference'] = $saved_field_preference;
 
 	echo wp_json_encode( $dataArr );
-	exit();
+	wp_die();
 }
 
 /*
@@ -712,5 +541,327 @@ function get_attendee_details_callback() {
 	$dataArr['status']             = ( ! empty( $attendee_data ) ) ? true : false;
 
 	echo wp_json_encode( $dataArr );
-	exit();
+	wp_die();
+}
+
+/**
+ * compulsory field html
+ *
+ * @param [array] $en_arr
+ * @param [array] $ar_arr
+ * 
+ * @return [string] $html
+ */
+function registration_form_compulsory_field_html( $en_arr, $ar_arr ){
+
+	$html = 	'<div class="field-wrap">';
+	$html .= 		'<div class="field-inner">';
+	$html .= 			'<div class="field-container en-field">';
+	$html .=				'<span class="field-label">' . $en_arr['label'] . '</span>';
+	$html .=				'<label for="' . $en_arr['id'] . '">';
+	$html .=					'<input type="' . $en_arr['type'] . '" name="' . $en_arr['id'] . '" id="' . $en_arr['id'] . '">';
+	$html .=				'</label>';
+	$html .=			'</div>';
+	$html .=			'<div class="field-container ar-field">';
+	$html .=				'<span class="field-label">' . $ar_arr['label'] . '</span>';
+	$html .=				'<label for="' . $ar_arr['id'] . '">';
+	$html .=					'<input type="' . $ar_arr['type'] . '" name="' . $ar_arr['id'] . '" id="' . $ar_arr['id'] . '">';
+	$html .=				'</label>';
+	$html .=			'</div>';
+	$html .=		'</div>';
+	$html .=	'</div>';
+
+	return $html;
+}
+
+/**
+ * select all html
+ *
+ * @return [string] $html
+ */
+function registration_form_if_select_all() {
+
+	$html = 	'<div class="field-wrap">';
+    $html .=    	'<div class="select_field_checkbox">';
+    $html .=        	'<div class="select_all_checkbox">';
+    $html .=            	'<label for="select_all">';
+    $html .=                 	'<input  name="select_all" id="select_all" type="checkbox">';
+    $html .=                    'Select All';
+    $html .=                '</label>';
+    $html .=          	'</div>';
+    $html .=      	'</div>';
+    $html .=  	'</div>';
+
+	return  $html;
+}
+
+/**
+ * Text Input
+ *
+ * @param [array] $en_arr
+ * @param [array] $ar_arr
+ * @param [string] $required_field
+ * 
+ * @return [string] $html
+ */
+function registration_form_text_input( $en_arr, $ar_arr, $check_html, $required_field ) {
+
+    $html =     '<div class="field-wrap">';
+    $html .=        '<div class="select_field_checkbox">';
+    $html .=            '<div class="display-filed-checkbox">';
+    $html .=                '<label for="checkbox_' . $en_arr['id'] . '">';
+    $html .=                    '<input ' . $check_html . ' name="checkbox_' . $en_arr['id'] . '" id="checkbox_' . $en_arr['id'] . '" type="checkbox">';
+    $html .=                '</label>';
+    $html .=            '</div>';
+    $html .=        '</div>';
+    $html .=        '<div class="field-inner">';
+    $html .=            '<div class="field-container en-field">';
+    $html .=                '<span class="field-label">' . $en_arr['label'] . $required_field . '</span>';
+    $html .=                '<label for="' . $en_arr['id'] . '">';
+    $html .=                    '<input type="' . $en_arr['type'] . '" name="' . $en_arr['id'] . '" id="' . $en_arr['id'] . '"/>';
+    $html .=                '</label>';
+    $html .=            '</div>';
+    $html .=            '<div class="field-container ar-field">';
+    $html .=                '<span class="field-label">' . $ar_arr['label'] . $required_field . '</span>';
+    $html .=                '<label for="' . $ar_arr['id'] . '">';
+    $html .=                    '<input type="' . $ar_arr['type'] . '" name="' . $ar_arr['id'] . '" id="' . $ar_arr['id'] . '"/>';
+    $html .=                '</label>';
+    $html .=            '</div>';
+    $html .=        '</div>';
+    $html .=    '</div>';
+
+	return  $html;
+}
+
+/**
+ * Text Area
+ *
+ * @param [array] $en_arr
+ * @param [array] $ar_arr
+ * @param [string] $check_html
+ * @param [string] $required_field
+ * 
+ * @return [string] $html
+ */
+function registration_form_text_area( $en_arr, $ar_arr, $check_html, $required_field ) {
+
+    $html =     '<div class="field-wrap">';
+    $html .=        '<div class="select_field_checkbox">';
+    $html .=            '<div class="display-filed-checkbox">';
+    $html .=                '<label for="checkbox_' . $en_arr['id'] . '">';
+    $html .=                    '<input ' . $check_html . ' name="checkbox_' . $en_arr['id'] . '" id="checkbox_' . $en_arr['id'] . '" type="checkbox">';
+    $html .=                '</label>';
+    $html .=            '</div>';
+    $html .=        '</div>';
+    $html .=        '<div class="field-inner">';
+    $html .=            '<div class="field-container en-field">';
+    $html .=                '<span class="field-label">' . $en_arr['label'] . $required_field . '</span>';
+    $html .=                '<label for="' . $en_arr['id'] . '">';
+    $html .=                    '<textarea type="textarea" class="form-control" name="' . $en_arr['id'] . '" id="' . $en_arr['id'] . '"></textarea>';
+    $html .=                '</label>';
+    $html .=            '</div>';
+    $html .=            '<div class="field-container ar-field">';
+    $html .=                '<span class="field-label">' . $ar_arr['label'] . $required_field . '</span>';
+    $html .=                '<label for="' . $ar_arr['id'] . '">';
+    $html .=                    '<textarea type="textarea" class="form-control" name="' . $ar_arr['id'] . '" id="' . $ar_arr['id'] . '"></textarea>';
+    $html .=                '</label>';
+    $html .=            '</div>';
+    $html .=        '</div>';
+    $html .=    '</div>';
+
+    return  $html;
+}
+
+/**
+ * Dropdown Select
+ *
+ * @param [array] $en_arr
+ * @param [array] $ar_arr
+ * @param [string] $check_html
+ * @param [string] $required_field
+ * @param [string] $multiple
+ * @param [string] $en_option_html
+ * @param [string] $ar_option_html
+ * 
+ * @return [string] $html
+ */
+function registration_form_dropdown_select( $en_arr, $ar_arr, $check_html, $required_field, $multiple, $en_option_html, $ar_option_html ) {
+
+    $html =    '<div class="field-wrap">';
+    $html .=        '<div class="select_field_checkbox">';
+    $html .=            '<div class="display-filed-checkbox">';
+    $html .=                '<label for="checkbox_' . $en_arr['id'] . '">';
+    $html .=                    '<input ' . $check_html . ' name="checkbox_' . $en_arr['id'] . '" id="checkbox_' . $en_arr['id'] . '" type="checkbox">';
+    $html .=                '</label>';
+    $html .=            '</div>';
+    $html .=        '</div>';
+    $html .=        '<div class="field-inner">';
+    $html .=            '<div class="field-container en-field">';
+    $html .=                '<span class="field-label">' . $en_arr['label'] . $required_field . '</span>';
+    $html .=                '<label for="' . $en_arr['id'] . '">';
+    $html .=                    '<select name="' . $en_arr['id'] . '" id="' . $en_arr['id'] . '" ' . $multiple . '>';
+    $html .=                        '<option>Choose</option>';
+    $html .=                        $en_option_html;
+    $html .=                    '</select>';
+    $html .=                '</label>';
+    $html .=            '</div>';
+    $html .=        '<div class="field-container ar-field">';
+    $html .=            '<span class="field-label">' . $ar_arr['label'] . $required_field . '</span>';
+    $html .=                '<label for="' . $ar_arr['id'] . '">';
+    $html .=                    '<select name="' . $ar_arr['id'] . '" id="' . $ar_arr['id'] . '" ' . $multiple . '>';
+    $html .=                        '<option>أختر</option>';
+    $html .=                        $ar_option_html;
+    $html .=                    '</select>';
+    $html .=                '</label>';
+    $html .=            '</div>';
+    $html .=        '</div>';
+    $html .=    '</div>';
+
+    return  $html;
+}
+
+/**
+ * Radio
+ *
+ * @param [array] $en_arr
+ * @param [array] $ar_arr
+ * @param [string] $check_html
+ * @param [string] $required_field
+ * @param [string] $en_option_html
+ * @param [string] $ar_option_html
+ * 
+ * @return [string] $html
+ */
+function registration_form_radio( $en_arr, $ar_arr, $check_html, $required_field, $en_option_html, $ar_option_html ) {
+
+    $html =     '<div class="field-wrap">';
+    $html .=        '<div class="select_field_checkbox">';
+    $html .=            '<div class="display-filed-checkbox">';
+    $html .=                '<label for="checkbox_' . $en_arr['id'] . '">';
+    $html .=                    '<input ' . $check_html . ' name="checkbox_' . $en_arr['id'] . '" id="checkbox_' . $html .=$en_arr['id'] . '" type="checkbox">';
+    $html .=                '</label>';
+    $html .=            '</div>';
+    $html .=        '</div>';
+    $html .=        '<div class="field-inner">';
+    $html .=            '<div class="field-container en-field">';
+    $html .=                '<span class="field-label">' . $en_arr['label'] . $required_field . '</span>';
+    $html .=                '<div class="radio-group">';
+    $html .=                    $en_option_html;
+    $html .=                '</div>';
+    $html .=            '</div>';
+    $html .=            '<div class="field-container ar-field">';
+    $html .=                '<span class="field-label">' . $ar_arr['label'] . $required_field . '</span>';
+    $html .=                '<div class="radio-group">';
+    $html .=                    $ar_option_html;
+    $html .=                '</div>';
+    $html .=            '</div>';
+    $html .=        '</div>';
+    $html .=    '</div>';
+
+    return  $html;
+}
+
+/**
+ * Checkbox
+ *
+ * @param [array] $en_arr
+ * @param [array] $ar_arr
+ * @param [string] $check_html
+ * @param [string] $required_field
+ * @param [string] $en_option_html
+ * @param [string] $ar_option_html
+ * 
+ * @return [string] $html
+ */
+function registration_form_checkbox( $en_arr, $ar_arr, $check_html, $required_field, $en_option_html, $ar_option_html ) {
+
+    $html =     '<div class="field-wrap">';
+    $html .=        '<div class="select_field_checkbox">';
+    $html .=            '<div class="display-filed-checkbox">';
+    $html .=                '<label for="checkbox_' . $en_arr['id'] . '">';
+    $html .=                    '<input ' . $check_html . ' name="checkbox_' . $en_arr['id'] . '" id="checkbox_' . $en_arr['id'] . '" type="checkbox">';
+    $html .=                '</label>';
+    $html .=            '</div>';
+    $html .=        '</div>';
+    $html .=        '<div class="field-inner">';
+    $html .=            '<div class="field-container en-field">';
+    $html .=                '<span class="field-label">' . $en_arr['label'] . $required_field . '</span>';
+    $html .=                '<div class="checkbox-group">';
+    $html .=                    $en_option_html;
+    $html .=                '</div>';
+    $html .=            '</div>';
+    $html .=            '<div class="field-container ar-field">';
+    $html .=                '<span class="field-label">' . $ar_arr['label'] . $required_field . '</span>';
+    $html .=                '<div class="radio-group">';
+    $html .=                    '<div class="checkbox-group">';
+    $html .=                        $ar_option_html;
+    $html .=                    '</div>';
+    $html .=                '</div>';
+    $html .=            '</div>';
+    $html .=        '</div>';
+    $html .=    '</div>';
+
+    return  $html;
+}
+
+/**
+ * File Upload
+ *
+ * @param [array] $en_arr
+ * @param [array] $ar_arr
+ * @param [string] $check_html
+ * @param [string] $required_field
+ * 
+ * @return [string] $html
+ */
+function registration_form_file_upload( $en_arr, $ar_arr, $check_html, $required_field ) {
+
+    $html =    '<div class="field-wrap">';
+    $html .=        '<div class="select_field_checkbox">';
+    $html .=            '<div class="display-filed-checkbox">';
+    $html .=                '<label for="checkbox_' . $en_arr['id'] . '">';
+    $html .=                    '<input ' . $check_html . ' name="checkbox_' . $en_arr['id'] . '" id="checkbox_' . $en_arr['id'] . '" type="checkbox">';
+    $html .=                '</label>';
+    $html .=            '</div>';
+    $html .=        '</div>';
+    $html .=        '<div class="field-inner">';
+    $html .=            '<div class="field-container en-field">';
+    $html .=                '<span class="field-label">' . $en_arr['label'] . $required_field . '</span>';
+    $html .=                '<div class="field-group">';
+    $html .=                    '<div class="file-upload-wrap">';
+    $html .=                        '<label for="en_filename">';
+    $html .=                            '<input type="text" id="en_filename" class="filename" readOnly="true"/>';
+    $html .=                        '</label>';
+    $html .=                        '<label for="' . $en_arr['id'] . '">';
+    $html .=                            '<input type="file" name="' . $en_arr['id'] . '" id="' . $en_arr['id'] . '" class="form-control" style="display:none" onclick="Handlechange(this.id);" />';
+    $html .=                        '</label>';
+    $html .=                    '</div>';
+    $html .=                    '<div class="button-wrap">';
+    $html .=                        '<label for="' . $en_arr['button1'] . '">';
+    $html .=                            '<input type="button" name="' . $en_arr['button1'] . '" value="' . $en_arr['button1'] . '" onclick="HandleBrowseClick(this.id);" id="' . $en_arr['button1'] . '" class="button button-primary" />';
+    $html .=                        '</label>';
+    $html .=                    '</div>';
+    $html .=                '</div>';
+    $html .=            '</div>';
+    $html .=            '<div class="field-container ar-field">';
+    $html .=                '<span class="field-label">' . $ar_arr['label'] . $required_field . '</span>';
+    $html .=                '<div class="field-group">';
+    $html .=                    '<div class="file-upload-wrap">';
+    $html .=                        '<label for="ar_filename">';
+    $html .=                            '<input type="text" id="ar_filename" class="filename" readOnly="true" />';
+    $html .=                        '</label>';
+    $html .=                        '<label for="' . $ar_arr['id'] . '">';
+    $html .=                            '<input type="file" name="' . $ar_arr['id'] . '" id="' . $ar_arr['id'] . '" class="form-control" style="display:none" onclick="Handlechange(this.id);"/>';
+    $html .=                        '</label>';
+    $html .=                    '</div>';
+    $html .=                    '<div class="button-wrap">';
+    $html .=                        '<label for="' . $ar_arr['button1'] . '">';
+    $html .=                            '<input type="button" name="' . $ar_arr['button1'] . '" value="' . $ar_arr['button1'] . '" onclick="HandleBrowseClick(this.id);" id="' . $ar_arr['button1'] . '" class="button button-primary" />';
+    $html .=                    '</div>';
+    $html .=                '</div>';
+    $html .=            '</div>';
+    $html .=        '</div>';
+    $html .=    '</div>';
+
+    return  $html;
 }
